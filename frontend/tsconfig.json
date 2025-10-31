@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["dom", "dom.iterable", "esnext"], // Removed problematic or unnecessary type library (e.g., 'trusted-types')
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,

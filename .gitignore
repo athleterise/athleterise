@@ -5,6 +5,9 @@ frontend/dist/
 frontend/.env
 frontend/.env.local
 
+storage/results/
+storage/uploads/
+
 # Python
 backend/.venv/
 backend/__pycache__/
