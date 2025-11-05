@@ -136,7 +136,7 @@ export default function VideoUploader({ onResult }: VideoUploaderProps) {
           disabled={!jobId || isAnalyzing}
           className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          {isAnalyzing ? "Analyzing..." : "Analyze Cover Drive"}
+          {isAnalyzing ? `Analyzing ${shotType.replace("_", " ")}...` : `Analyze ${shotType.replace("_", " ")}`}
         </button>
       </div>
 
