@@ -23,33 +23,32 @@ class CutShotAnalyzer:
             min_tracking_confidence=0.5
         )
         
-        # Ideal ranges for cut shot metrics
         self.ideal_ranges = {
-            'front_elbow_angle': (150, 170),
-            'back_elbow_angle': (70, 100),
-            'torso_lean': (10, 25),
-            'shoulder_alignment': (15, 30),
-            'front_knee_angle': (80, 100),
-            'back_knee_angle': (120, 150),
-            'hip_rotation': (30, 50),
-            'wrist_angle': (150, 170),
-            'head_position': (-5, 5),  # percentage offset
-            'center_of_mass': (0, 10)  # percentage over front foot
+        'front_elbow_angle': (160, 175),   # front arm longer to cut away from body
+        'back_elbow_angle': (80, 110),     # control from top hand
+        'torso_lean': (0, 10),             # minimal forward lean on back-foot base
+        'shoulder_alignment': (20, 40),    # shoulders more open than a drive
+        'front_knee_angle': (140, 170),    # front leg long/light
+        'back_knee_angle': (80, 110),      # back knee flexed
+        'hip_rotation': (40, 70),          # hips open to hit square/behind square
+        'wrist_angle': (150, 170),         # keep if you’re estimating it
+        'head_position': (-15, -5),        # %: negative toward back foot
+        'center_of_mass': (-15, -5)        # %: COM biased toward back foot
         }
-        
+
         # Acceptable ranges (wider than ideal)
         self.acceptable_ranges = {
-            'front_elbow_angle': (140, 175),
-            'back_elbow_angle': (60, 110),
-            'torso_lean': (5, 30),
-            'shoulder_alignment': (10, 35),
-            'front_knee_angle': (70, 110),
-            'back_knee_angle': (110, 160),
-            'hip_rotation': (20, 60),
-            'wrist_angle': (140, 175),
-            'head_position': (-10, 10),
-            'center_of_mass': (-5, 15)
-        }
+        'front_elbow_angle': (150, 180),
+        'back_elbow_angle': (70, 120),
+        'torso_lean': (-5, 15),
+        'shoulder_alignment': (10, 50),
+        'front_knee_angle': (120, 175),
+        'back_knee_angle': (70, 120),
+        'hip_rotation': (30, 80),
+        'wrist_angle': (140, 175),
+        'head_position': (-20, 5),
+        'center_of_mass': (-20, 5)
+    }
 
     def calculate_angle(self, point1: np.ndarray, point2: np.ndarray, point3: np.ndarray) -> float:
         """Calculate angle between three points in degrees."""
