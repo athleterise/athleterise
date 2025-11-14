@@ -1,3 +1,4 @@
+import { BACKEND_URL } from "../utils/api";
 import { useState } from "react";
 
 interface AnalysisResultsProps {
@@ -292,7 +293,7 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
               
               <div className="relative">
                 <img
-                  src={`http://localhost:8000/static/${data.keyframe_path}`}
+                  src={`${BACKEND_URL}/static/${data.keyframe_path}`}
                   alt="Annotated keyframe with pose landmarks and angles"
                   className="max-w-full h-auto rounded-lg shadow-xl mx-auto border-4 border-white"
                   style={{ maxHeight: '600px' }}

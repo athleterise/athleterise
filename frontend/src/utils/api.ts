@@ -1,4 +1,5 @@
-const BACKEND_URL = "http://localhost:8000";
+export const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
 export const testConnection = async () => {
   try {
@@ -12,28 +13,23 @@ export const testConnection = async () => {
   }
 };
 
+
 export const uploadVideo = async (file: File) => {
   const formData = new FormData();
   formData.append("file", file);
-
-  console.log("Sending upload request to:", `${BACKEND_URL}/upload`);
-  console.log("File details:", { name: file.name, size: file.size, type: file.type });
 
   try {
     const res = await fetch(`${BACKEND_URL}/upload`, {
       method: "POST",
       body: formData,
     });
-    
-    console.log("Upload response status:", res.status);
-    console.log("Upload response headers:", Object.fromEntries(res.headers.entries()));
-    
+
     if (!res.ok) {
       const errorText = await res.text();
       console.error("Upload failed:", errorText);
       throw new Error(`Upload failed: ${res.status} ${errorText}`);
     }
-    
+
     const data = await res.json();
     console.log("Upload successful:", data);
     return data;
@@ -60,10 +56,10 @@ export const analyzeVideo = async (jobId: string, shotType: string) => {
       shot: shotType,
     }),
   });
-  
+
   if (!res.ok) {
     throw new Error(`Analysis failed: ${res.statusText}`);
   }
-  
+
   return res.json();
 };
