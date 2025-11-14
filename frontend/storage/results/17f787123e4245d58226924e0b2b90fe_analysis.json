@@ -1,0 +1,80 @@
+{
+  "shot_type": "cover_drive",
+  "keyframe_index": 66,
+  "metrics": {
+    "front_elbow_angle": 50.159376927013916,
+    "back_elbow_angle": 44.956260842481704,
+    "torso_lean": 9.7982798737411,
+    "shoulder_alignment": 178.1197744804632,
+    "front_knee_angle": 108.78793370341835,
+    "back_knee_angle": 158.0334501606489,
+    "hip_rotation": 172.54600381083526,
+    "wrist_angle": 8.725100961785168,
+    "head_position": -10.029011964797974,
+    "center_of_mass": -3.516814112663269
+  },
+  "feedback": [
+    {
+      "category": "Front Elbow Angle",
+      "score": 4,
+      "message": "front elbow angle too low at 50.2\u00b0",
+      "severity": "error"
+    },
+    {
+      "category": "Back Elbow Angle",
+      "score": 4,
+      "message": "back elbow angle too low at 45.0\u00b0",
+      "severity": "error"
+    },
+    {
+      "category": "Torso Lean",
+      "score": 7,
+      "message": "Good torso lean at 9.8\u00b0, room for improvement",
+      "severity": "warning"
+    },
+    {
+      "category": "Shoulder Alignment",
+      "score": 4,
+      "message": "shoulder alignment too high at 178.1\u00b0",
+      "severity": "error"
+    },
+    {
+      "category": "Front Knee Angle",
+      "score": 7,
+      "message": "Good front knee angle at 108.8\u00b0, room for improvement",
+      "severity": "warning"
+    },
+    {
+      "category": "Back Knee Angle",
+      "score": 7,
+      "message": "Good back knee angle at 158.0\u00b0, room for improvement",
+      "severity": "warning"
+    },
+    {
+      "category": "Hip Rotation",
+      "score": 4,
+      "message": "hip rotation too high at 172.5\u00b0",
+      "severity": "error"
+    },
+    {
+      "category": "Wrist Angle",
+      "score": 4,
+      "message": "wrist angle too low at 8.7\u00b0",
+      "severity": "error"
+    },
+    {
+      "category": "Head Position",
+      "score": 4,
+      "message": "head position too low at -10.0\u00b0",
+      "severity": "error"
+    },
+    {
+      "category": "Center Of Mass",
+      "score": 7,
+      "message": "Good center of mass at -3.5\u00b0, room for improvement",
+      "severity": "warning"
+    }
+  ],
+  "keyframe_path": "/Users/shauryarawat/Desktop/athlere_rise_pulled/athleterise/storage/results/analysis/17f787123e4245d58226924e0b2b90fe_coverdrive_keyframe.jpg",
+  "analysis_timestamp": "1763144311.8660815"
+}

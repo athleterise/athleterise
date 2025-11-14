@@ -1,0 +1,22 @@
+{
+    "Footwork": {
+        "score": 6,
+        "feedback": "\u274c Needs improvement. Front foot should point more toward the direction of the shot."
+    },
+    "Head Position": {
+        "score": 4,
+        "feedback": "\u274c Major issue observed repeatedly. Keeping the head above the front knee improves balance and timing."
+    },
+    "Balance": {
+        "score": 4,
+        "feedback": "\u274c Major issue observed repeatedly. Maintain a consistent forward lean with a stable spine."
+    },
+    "Swing Control": {
+        "score": null,
+        "feedback": "Not evaluated \u2014 bat tracking not implemented."
+    },
+    "Follow-through": {
+        "score": null,
+        "feedback": "Not evaluated \u2014 follow-through not measured."
+    }
+}

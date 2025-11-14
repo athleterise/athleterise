@@ -44,19 +44,19 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-white rounded-2xl shadow-2xl border border-gray-100">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">Cricket Shot Analysis Results</h2>
-        <p className="text-gray-600">Comprehensive biomechanical analysis of your {data.shot_type.replace('_', ' ')} shot</p>
+    <div className="max-w-6xl mx-auto p-4 sm:p-6 bg-white rounded-2xl shadow-2xl border border-gray-100">
+      <div className="text-center mb-6 sm:mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Cricket Shot Analysis Results</h2>
+        <p className="text-sm sm:text-base text-gray-600">Comprehensive biomechanical analysis of your {data.shot_type.replace('_', ' ')} shot</p>
       </div>
       
       {/* Tab Navigation */}
-      <div className="flex bg-gray-50 rounded-xl p-1 mb-8">
+      <div className="flex flex-col sm:flex-row bg-gray-50 rounded-xl p-1 mb-6 sm:mb-8 shadow-lg">
         <button
           onClick={() => setActiveTab('metrics')}
-          className={`flex-1 px-6 py-3 font-semibold text-sm rounded-lg transition-all duration-200 ${
+          className={`flex-1 px-4 py-2 sm:px-6 sm:py-3 font-semibold text-xs sm:text-sm rounded-lg transition-all duration-200 ${
             activeTab === 'metrics'
-              ? 'bg-white text-blue-600 shadow-md'
+              ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-md'
               : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
           }`}
         >
@@ -64,32 +64,32 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
         </button>
         <button
           onClick={() => setActiveTab('feedback')}
-          className={`flex-1 px-6 py-3 font-semibold text-sm rounded-lg transition-all duration-200 ${
+          className={`flex-1 px-4 py-2 sm:px-6 sm:py-3 font-semibold text-xs sm:text-sm rounded-lg transition-all duration-200 ${
             activeTab === 'feedback'
-              ? 'bg-white text-blue-600 shadow-md'
+              ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-md'
               : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
           }`}
         >
           💬 Feedback
         </button>
-        <button
+        {/* <button
           onClick={() => setActiveTab('keyframe')}
-          className={`flex-1 px-6 py-3 font-semibold text-sm rounded-lg transition-all duration-200 ${
+          className={`flex-1 px-4 py-2 sm:px-6 sm:py-3 font-semibold text-xs sm:text-sm rounded-lg transition-all duration-200 ${
             activeTab === 'keyframe'
-              ? 'bg-white text-blue-600 shadow-md'
+              ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md'
               : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
           }`}
         >
           🎯 Keyframe
-        </button>
+        </button> */}
       </div>
 
       {/* Metrics Tab */}
       {activeTab === 'metrics' && (
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           <div className="text-center">
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">Biomechanical Metrics</h3>
-            <p className="text-gray-600">Detailed angle measurements and body positioning analysis</p>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Biomechanical Metrics</h3>
+            <p className="text-sm sm:text-base text-gray-600">Detailed angle measurements and body positioning analysis</p>
           </div>
           
           {/* Arm Mechanics */}
@@ -100,7 +100,7 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
               </div>
               <h4 className="text-xl font-bold text-gray-800">Arm Mechanics</h4>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-400">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-semibold text-gray-700">Front Elbow Angle</span>
@@ -132,7 +132,7 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
               </div>
               <h4 className="text-xl font-bold text-gray-800">Torso & Shoulder</h4>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-400">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-semibold text-gray-700">Torso Lean</span>
@@ -164,7 +164,7 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
               </div>
               <h4 className="text-xl font-bold text-gray-800">Lower Body</h4>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-purple-400">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-semibold text-gray-700">Front Knee Angle</span>
@@ -196,7 +196,7 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
               </div>
               <h4 className="text-xl font-bold text-gray-800">Additional Metrics</h4>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-orange-400">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-semibold text-gray-700">Hip Rotation</span>
@@ -224,13 +224,13 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
 
       {/* Feedback Tab */}
       {activeTab === 'feedback' && (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <div className="text-center">
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">Performance Feedback</h3>
-            <p className="text-gray-600">Detailed analysis and improvement suggestions for your cricket shot</p>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Performance Feedback</h3>
+            <p className="text-sm sm:text-base text-gray-600">Detailed analysis and improvement suggestions for your cricket shot</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {data.feedback.map((item, index) => (
               <div
                 key={index}
@@ -275,12 +275,11 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
         </div>
       )}
 
-      {/* Keyframe Tab */}
-      {activeTab === 'keyframe' && (
-        <div className="space-y-6">
+      {/* {activeTab === 'keyframe' && (
+        <div className="space-y-4 sm:space-y-6">
           <div className="text-center">
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Keyframe Analysis</h3>
-            <p className="text-gray-600">Pose landmarks and angle measurements at the optimal impact moment</p>
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">Keyframe Analysis</h3>
+            <p className="text-sm sm:text-base text-gray-600">Pose landmarks and angle measurements at the optimal impact moment</p>
           </div>
           
           {data.keyframe_path ? (
@@ -302,10 +301,33 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
                   }}
                 />
                 
-                {/* Image overlay with info */}
+                
                 <div className="absolute top-4 left-4 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg">
                   <div className="text-sm font-semibold">Impact Frame</div>
                   <div className="text-xs opacity-90">Pose Analysis</div>
+                </div>
+
+               
+                <div className="absolute top-4 right-4 flex items-center space-x-2">
+                  <button
+                    className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center shadow-md hover:bg-gray-300"
+                    style={{ zIndex: 10 }}
+                    aria-label="Info Icon"
+                  >
+                    <svg
+                      className="w-6 h-6 text-gray-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M12 18.5a6.5 6.5 0 100-13 6.5 6.5 0 000 13z"
+                      />
+                    </svg>
+                  </button>
                 </div>
               </div>
               
@@ -338,8 +360,18 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
           ) : (
             <div className="text-center py-12 bg-gray-50 rounded-xl">
               <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <svg
+                  className="w-8 h-8 text-gray-400" 
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
                 </svg>
               </div>
               <h4 className="text-lg font-semibold text-gray-700 mb-2">Keyframe Not Available</h4>
@@ -347,7 +379,7 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
             </div>
           )}
         </div>
-      )}
+      )} */}
     </div>
   );
 }
