@@ -342,7 +342,7 @@ class CutShotAnalyzer:
                 'feedback': feedback,
                 'keyframe_path': str(keyframe_path),
                 'analysis_timestamp': str(Path(video_path).stat().st_mtime),
-                "video_path": f"results/{job_id}_overlay.mp4"
+                "video_path": f"results/{Path(video_path).name}"
             }
             
             return results
