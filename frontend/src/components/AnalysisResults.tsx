@@ -50,7 +50,7 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
         <h2 className="text-3xl font-bold text-gray-800 mb-2">Cricket Shot Analysis Results</h2>
         <p className="text-gray-600">Comprehensive biomechanical analysis of your {data.shot_type.replace('_', ' ')} shot</p>
       </div>
-      
+
       {/* Tab Navigation */}
       <div className="flex bg-gray-50 rounded-xl p-1 mb-8">
         <button
@@ -92,7 +92,7 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
             <h3 className="text-2xl font-bold text-gray-800 mb-2">Biomechanical Metrics</h3>
             <p className="text-gray-600">Detailed angle measurements and body positioning analysis</p>
           </div>
-          
+
           {/* Arm Mechanics */}
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl shadow-lg border border-blue-100">
             <div className="flex items-center mb-4">
@@ -230,7 +230,7 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
             <h3 className="text-2xl font-bold text-gray-800 mb-2">Performance Feedback</h3>
             <p className="text-gray-600">Detailed analysis and improvement suggestions for your cricket shot</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {data.feedback.map((item, index) => (
               <div
@@ -255,12 +255,12 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
                   )}
                 </div>
                 <p className="text-sm leading-relaxed">{item.message}</p>
-                
+
                 {/* Progress indicator */}
                 {item.score && (
                   <div className="mt-4">
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
+                      <div
                         className={`h-2 rounded-full ${
                           item.score >= 8 ? 'bg-green-500' : 
                           item.score >= 6 ? 'bg-yellow-500' : 'bg-red-500'
@@ -283,14 +283,14 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
             <h3 className="text-xl font-bold text-gray-800 mb-2">Keyframe Analysis</h3>
             <p className="text-gray-600">Pose landmarks and angle measurements at the optimal impact moment</p>
           </div>
-          
+
           {data.keyframe_path ? (
             <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-xl shadow-lg">
               <div className="text-center mb-4">
                 <h4 className="text-lg font-semibold text-gray-800 mb-2">Annotated Keyframe</h4>
                 <p className="text-sm text-gray-600">Frame showing pose landmarks and calculated angles</p>
               </div>
-              
+
               <div className="relative">
                 <img
                   src={`${BACKEND_URL}/static/${data.keyframe_path}`}
@@ -302,14 +302,14 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
                     e.currentTarget.style.display = 'none';
                   }}
                 />
-                
+
                 {/* Image overlay with info */}
                 <div className="absolute top-4 left-4 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg">
                   <div className="text-sm font-semibold">Impact Frame</div>
                   <div className="text-xs opacity-90">Pose Analysis</div>
                 </div>
               </div>
-              
+
               <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white p-3 rounded-lg shadow-sm">
                   <div className="flex items-center">
@@ -318,7 +318,7 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
                   </div>
                   <p className="text-xs text-gray-500 mt-1">33 body keypoints detected</p>
                 </div>
-                
+
                 <div className="bg-white p-3 rounded-lg shadow-sm">
                   <div className="flex items-center">
                     <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
@@ -326,7 +326,7 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
                   </div>
                   <p className="text-xs text-gray-500 mt-1">Biomechanical analysis</p>
                 </div>
-                
+
                 <div className="bg-white p-3 rounded-lg shadow-sm">
                   <div className="flex items-center">
                     <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>

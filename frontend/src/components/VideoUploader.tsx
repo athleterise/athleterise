@@ -58,18 +58,74 @@ export default function VideoUploader({ onResult }: VideoUploaderProps) {
     if (!file || !jobId) return;
     setIsAnalyzing(true);
     setStatus("Analyzing...");
-    
-    try {
-      const analysisResult = await analyzeVideo(jobId, shotType);
-      setStatus("Analysis complete");
-      onResult(analysisResult);
-    } catch (err) {
-      console.error(err);
-      setStatus("Analysis failed");
-    } finally {
-      setIsAnalyzing(false);
+
+  try {
+    const analysisResult = await analyzeVideo(jobId, shotType);
+
+    // 🔍 Debug: print the raw backend response
+    console.log("ANALYSIS RESULT RECEIVED:", analysisResult);
+
+    setStatus("Analysis complete");
+
+    // Pass data to parent (for metrics display)
+    onResult(analysisResult);
+
+    // -------------------------------
+    // AUTO-DOWNLOAD FEATURE STARTS
+    // -------------------------------
+
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+
+    // 1) Auto-download keyframe image
+    if (analysisResult.keyframe_path) {
+      const imageUrl = `${backendUrl}/static/${analysisResult.keyframe_path}`;
+      console.log("Triggering download for keyframe:", imageUrl);
+      triggerAutoDownload(imageUrl, "keyframe_image.png");
+    } else {
+      console.warn("No keyframe_path returned from backend.");
     }
-  };
+
+    // 2) Auto-download annotated video
+    if (analysisResult.video_path) {
+      const videoUrl = `${backendUrl}/static/${analysisResult.video_path}`;
+      console.log("Triggering download for annotated video:", videoUrl);
+      triggerAutoDownload(videoUrl, "annotated_video.mp4");
+    } else {
+      console.warn("No video_path returned from backend.");
+    }
+
+    // -------------------------------
+    // AUTO-DOWNLOAD FEATURE ENDS
+    // -------------------------------
+
+} catch (err) {
+    console.error("Analysis failed with error:", err);
+    setStatus("Analysis failed");
+} finally {
+    setIsAnalyzing(false);
+}
+
+};
+
+const triggerAutoDownload = (url: string, filename: string) => {
+  // Disable auto-download when running locally
+  // if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+  //   console.log("Skipping auto-download in local dev:", filename);
+  //   return;
+  // }
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.style.display = "none";
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
