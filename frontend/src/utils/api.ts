@@ -37,15 +37,19 @@ export const getResult = async (jobId: string) => {
 };
 
 export const analyzeVideo = async (jobId: string, shotType: string) => {
-  const res = await fetch(`${BACKEND_URL}/analyze/`, {
+  const base = BACKEND_URL.replace(/\/+$/, ""); // remove trailing slashes
+  const url = `${base}/analyze/`;
+
+  const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ job_id: jobId, shot: shotType }),
   });
 
   if (!res.ok) {
-    throw new Error(`Analysis failed: ${res.statusText}`);
+    throw new Error(`Backend error: ${res.status}`);
   }
 
   return res.json();
 };
+
