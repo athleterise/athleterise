@@ -34,8 +34,9 @@ def generate_overlay_video(video_path: str, landmarks_json_path: str, output_pat
 
     pose = mp_pose.Pose(static_image_mode=False, model_complexity=1,
                         min_detection_confidence=0.5, min_tracking_confidence=0.5)
-    out = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*'mp4v'),
-                          fps, (frame_width, frame_height))
+    fourcc = cv2.VideoWriter_fourcc(*'avc1')
+    out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
+
 
     persistent_issues = {}
 
