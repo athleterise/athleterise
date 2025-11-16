@@ -284,7 +284,7 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
             <p className="text-gray-600">Pose landmarks and angle measurements at the optimal impact moment</p>
           </div>
 
-          {data.keyframe_path ? (
+          {data.keyframe_url ? (
             <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-xl shadow-lg">
               <div className="text-center mb-4">
                 <h4 className="text-lg font-semibold text-gray-800 mb-2">Annotated Keyframe</h4>
@@ -293,7 +293,7 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
 
               <div className="relative">
                 <img
-                  src={`${BACKEND_URL}/static/${data.keyframe_path}`}
+                  src={`${BACKEND_URL}${data.keyframe_url}`}
                   alt="Annotated keyframe with pose landmarks and angles"
                   className="max-w-full h-auto rounded-lg shadow-xl mx-auto border-4 border-white"
                   style={{ maxHeight: '600px' }}
