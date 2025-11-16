@@ -19,37 +19,63 @@ class AnalysisRequest(BaseModel):
 
 @router.post("/")
 async def analyze_video(request: AnalysisRequest):
-    """
-    Analyze a previously uploaded video for the specified shot type.
-    """
     try:
-        # Find the uploaded video file
+        # Locate uploaded video
         upload_dir = Path(UPLOAD_DIR)
         video_files = list(upload_dir.glob(f"{request.job_id}_*"))
-        
+
         if not video_files:
             raise HTTPException(status_code=404, detail="Video file not found")
-        
-        video_path = str(video_files[0])
-        
-        # Create output directory for analysis results
+
+        video_path = video_files[0]
+        original_filename = video_path.name
+
+        # Output directory for results
         output_dir = Path(RESULT_DIR) / "analysis"
         output_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Analyze based on shot type
+
+        # Shot-specific analysis
         if request.shot == "cover_drive":
-            result = analyze_cover_drive_video(video_path, str(output_dir))
+            result = analyze_cover_drive_video(str(video_path), str(output_dir))
         else:
-            # For now, default to cover drive analysis
-            result = analyze_cover_drive_video(video_path, str(output_dir))
-            result['shot_type'] = request.shot
-        
-        # Save analysis results
+            # Default for now
+            result = analyze_cover_drive_video(str(video_path), str(output_dir))
+            result["shot_type"] = request.shot
+
+        #
+        # ----------- FIX: CLEAN & ATTACH PUBLIC URLS -----------
+        #
+
+        # Keyframe URL (returned by analyzer as local path)
+        if "keyframe_path" in result and result["keyframe_path"]:
+            keyframe_name = Path(result["keyframe_path"]).name
+            result["keyframe_url"] = f"/static/results/{keyframe_name}"
+
+        # Original uploaded video
+        result["original_video_url"] = f"/static/uploads/{original_filename}"
+
+        # Overlay video generated in overlay_utils.py
+        overlay_file = Path(RESULT_DIR) / f"{request.job_id}_overlay.mp4"
+        if overlay_file.exists():
+            result["overlay_video_url"] = f"/static/results/{overlay_file.name}"
+        else:
+            result["overlay_video_url"] = None
+
+        #
+        # ----------- REMOVE FILESYSTEM PATHS (important) -----------
+        #
+        if "keyframe_path" in result:
+            del result["keyframe_path"]
+
+        if "video_path" in result:
+            del result["video_path"]
+
+        # Save results (optional)
         result_file = Path(RESULT_DIR) / f"{request.job_id}_analysis.json"
-        with open(result_file, 'w') as f:
+        with open(result_file, "w") as f:
             json.dump(result, f, indent=2)
-        
+
         return result
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
