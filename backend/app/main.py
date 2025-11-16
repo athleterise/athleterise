@@ -31,8 +31,18 @@ app.include_router(analysis_router)
 
 # Mount static files for serving analysis images
 from pathlib import Path
-static_dir = Path(__file__).parent.parent.parent / "storage" / "results"
-app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+# Correct static directory for Render persistent storage
+storage_dir = Path("/storage")
+results_dir = storage_dir / "results"
+uploads_dir = storage_dir / "uploads"
+
+results_dir.mkdir(parents=True, exist_ok=True)
+uploads_dir.mkdir(parents=True, exist_ok=True)
+
+# Serve both results & uploads
+app.mount("/static/results", StaticFiles(directory=str(results_dir)), name="static_results")
+app.mount("/static/uploads", StaticFiles(directory=str(uploads_dir)), name="static_uploads")
+
 
 @app.get("/health")
 async def health_check():
