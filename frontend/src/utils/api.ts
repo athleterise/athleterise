@@ -37,7 +37,7 @@ export const getResult = async (jobId: string) => {
 };
 
 export const analyzeVideo = async (jobId: string, shotType: string) => {
-  const res = await fetch(`${BACKEND_URL}/analyze`, {
+  const res = await fetch(`${BACKEND_URL}/analyze/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ job_id: jobId, shot: shotType }),
