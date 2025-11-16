@@ -9,7 +9,12 @@ import os
 # Add the app directory to the path so we can import our analysis module
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from app.analysis.cover_drive_analyzer import analyze_cover_drive_video
-from app.storage import UPLOAD_DIR, RESULT_DIR
+
+# ===============================
+# FIX: Use Render storage folders
+# ===============================
+UPLOAD_DIR = "/storage/uploads"
+RESULT_DIR = "/storage/results"
 
 router = APIRouter(prefix="/analyze", tags=["Analysis"])
 
@@ -31,22 +36,19 @@ async def analyze_video(request: AnalysisRequest):
         original_filename = video_path.name
 
         # Output directory for results
-        output_dir = Path(RESULT_DIR) / "analysis"
+        output_dir = Path(RESULT_DIR)
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Shot-specific analysis
         if request.shot == "cover_drive":
             result = analyze_cover_drive_video(str(video_path), str(output_dir))
         else:
-            # Default for now
             result = analyze_cover_drive_video(str(video_path), str(output_dir))
             result["shot_type"] = request.shot
 
-        #
-        # ----------- FIX: CLEAN & ATTACH PUBLIC URLS -----------
-        #
+        # ----------- CLEAN & ATTACH PUBLIC URLS -------------
 
-        # Keyframe URL (returned by analyzer as local path)
+        # Keyframe image
         if "keyframe_path" in result and result["keyframe_path"]:
             keyframe_name = Path(result["keyframe_path"]).name
             result["keyframe_url"] = f"/static/results/{keyframe_name}"
@@ -54,23 +56,20 @@ async def analyze_video(request: AnalysisRequest):
         # Original uploaded video
         result["original_video_url"] = f"/static/uploads/{original_filename}"
 
-        # Overlay video generated in overlay_utils.py
+        # Overlay video
         overlay_file = Path(RESULT_DIR) / f"{request.job_id}_overlay.mp4"
         if overlay_file.exists():
             result["overlay_video_url"] = f"/static/results/{overlay_file.name}"
         else:
             result["overlay_video_url"] = None
 
-        #
-        # ----------- REMOVE FILESYSTEM PATHS (important) -----------
-        #
+        # Remove internal paths
         if "keyframe_path" in result:
             del result["keyframe_path"]
-
         if "video_path" in result:
             del result["video_path"]
 
-        # Save results (optional)
+        # Save results
         result_file = Path(RESULT_DIR) / f"{request.job_id}_analysis.json"
         with open(result_file, "w") as f:
             json.dump(result, f, indent=2)
