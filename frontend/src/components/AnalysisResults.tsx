@@ -21,7 +21,7 @@ interface AnalysisResultsProps {
       message: string;
       severity: 'good' | 'warning' | 'error';
     }>;
-    keyframe_path: string;
+    keyframe_url?: string;
     shot_type: string;
   };
 }
