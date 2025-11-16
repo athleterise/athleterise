@@ -37,10 +37,9 @@ def generate_overlay_video(video_path: str, landmarks_json_path: str, output_pat
     # Force WebM VP9 output since H264 is not available on Render
     output_path = str(Path(output_path).with_suffix(".webm"))
 
-    # Force WebM VP8 output (supported on Render)
-    output_path = str(Path(output_path).with_suffix(".webm"))
-
-    fourcc = cv2.VideoWriter_fourcc(*'VP80')  # VP8 encoder
+    # Use MJPEG inside an AVI container (100% supported)
+    output_path = str(Path(output_path).with_suffix(".avi"))
+    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
     out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
 
 
