@@ -46,28 +46,33 @@ async def analyze_video(request: AnalysisRequest):
             result = analyze_cover_drive_video(str(video_path), str(output_dir))
             result["shot_type"] = request.shot
 
-        # ----------- CLEAN & ATTACH PUBLIC URLS -------------
+        # ----------- RETURN ONLY THE ANNOTATED VIDEO PATH -------------
 
-        # Keyframe image
-        if "keyframe_path" in result and result["keyframe_path"]:
-            keyframe_name = Path(result["keyframe_path"]).name
-            result["keyframe_url"] = f"/static/results/{keyframe_name}"
+        # Detect overlay video (prefer .avi since that's what is generated)
+        overlay_avi = Path(RESULT_DIR) / f"{request.job_id}_overlay.avi"
+        overlay_mp4 = Path(RESULT_DIR) / f"{request.job_id}_overlay.mp4"
 
-        # Original uploaded video
-        result["original_video_url"] = f"/static/uploads/{original_filename}"
-
-        # Overlay video
-        overlay_file = Path(RESULT_DIR) / f"{request.job_id}_overlay.mp4"
-        if overlay_file.exists():
-            result["overlay_video_url"] = f"/static/results/{overlay_file.name}"
+        if overlay_avi.exists():
+            overlay_file = overlay_avi
+        elif overlay_mp4.exists():
+            overlay_file = overlay_mp4
         else:
-            result["overlay_video_url"] = None
+            overlay_file = None
 
-        # Remove internal paths
+        # Provide ONLY the field expected by the frontend
+        if overlay_file:
+            # Frontend constructs: backendUrl + "/static/" + video_path
+            result["video_path"] = f"results/{overlay_file.name}"
+        else:
+            result["video_path"] = None
+
+        # Clean up any other fields we do not want to expose
         if "keyframe_path" in result:
             del result["keyframe_path"]
-        if "video_path" in result:
-            del result["video_path"]
+        if "keyframe_url" in result:
+            del result["keyframe_url"]
+        if "overlay_video_url" in result:
+            del result["overlay_video_url"]
 
         # Save results
         result_file = Path(RESULT_DIR) / f"{request.job_id}_analysis.json"
