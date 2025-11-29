@@ -87,7 +87,7 @@ export default function VideoUploader({ onResult }: VideoUploaderProps) {
         setTimeout(() => {
           console.log("Triggering delayed download:", videoUrl);
           triggerAutoDownload(videoUrl, "annotated_video.avi");
-        }, 3000);
+        }, 15000);
 
       } else {
         console.warn("No video_path returned from backend.");
