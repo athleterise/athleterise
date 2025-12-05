@@ -78,20 +78,25 @@ export default function VideoUploader({ onResult }: VideoUploaderProps) {
         process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
       // AUTO-DOWNLOAD ANNOTATED VIDEO ONLY (with delay)
+      // AUTO-DOWNLOAD ANNOTATED VIDEO ONLY (with delay)
       if (analysisResult.video_path) {
         const videoUrl = `${backendUrl}/static/${analysisResult.video_path}`;
 
         console.log("Annotated video will download after delay:", videoUrl);
 
+        // Extract the correct extension (mp4)
+        const filename = analysisResult.video_path.split("/").pop() || "annotated_video.mp4";
+
         // Render needs time for static file propagation
         setTimeout(() => {
           console.log("Triggering delayed download:", videoUrl);
-          triggerAutoDownload(videoUrl, "annotated_video.avi");
+          triggerAutoDownload(videoUrl, filename);
         }, 15000);
 
       } else {
         console.warn("No video_path returned from backend.");
       }
+
 
       // -------------------------------
       // AUTO-DOWNLOAD FEATURE ENDS
