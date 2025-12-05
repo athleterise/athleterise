@@ -4,6 +4,8 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import json
+import subprocess
+import os
 from pathlib import Path
 
 mp_pose = mp.solutions.pose
@@ -35,13 +37,18 @@ def generate_overlay_video(video_path: str, landmarks_json_path: str, output_pat
     pose = mp_pose.Pose(static_image_mode=False, model_complexity=1,
                         min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-    # Use MP4 output with mp4v codec (universally supported)
-    output_path = str(Path(output_path).with_suffix(".mp4"))
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
+    # ------------------------------
+    # RAW AVI → FINISHED MP4 PATHS
+    # ------------------------------
+    base_path = Path(output_path)
+    raw_output_path = str(base_path.with_suffix(".avi"))
+    final_mp4_path = str(base_path.with_suffix(".mp4"))
 
-
-
+    # ------------------------------
+    # OpenCV writes RAW MJPEG AVI (100% reliable everywhere)
+    # ------------------------------
+    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+    out = cv2.VideoWriter(raw_output_path, fourcc, fps, (frame_width, frame_height))
 
     persistent_issues = {}
 
@@ -61,6 +68,9 @@ def generate_overlay_video(video_path: str, landmarks_json_path: str, output_pat
         if ts not in persistent_issues[issue]:
             persistent_issues[issue].append(ts)
 
+    # ------------------------------
+    # MAIN VIDEO PROCESS LOOP
+    # ------------------------------
     frame_count = 0
     while cap.isOpened():
         ret, frame = cap.read()
@@ -78,28 +88,38 @@ def generate_overlay_video(video_path: str, landmarks_json_path: str, output_pat
                 return [lm[idx].x * frame_width, lm[idx].y * frame_height]
 
             # --- Key joints ---
-            shoulder, elbow, wrist = map(pt, [mp_pose.PoseLandmark.LEFT_SHOULDER.value,
-                                              mp_pose.PoseLandmark.LEFT_ELBOW.value,
-                                              mp_pose.PoseLandmark.LEFT_WRIST.value])
-            hip, knee, ankle = map(pt, [mp_pose.PoseLandmark.LEFT_HIP.value,
-                                        mp_pose.PoseLandmark.LEFT_KNEE.value,
-                                        mp_pose.PoseLandmark.LEFT_ANKLE.value])
+            shoulder, elbow, wrist = map(pt, [
+                mp_pose.PoseLandmark.LEFT_SHOULDER.value,
+                mp_pose.PoseLandmark.LEFT_ELBOW.value,
+                mp_pose.PoseLandmark.LEFT_WRIST.value
+            ])
+            hip, knee, ankle = map(pt, [
+                mp_pose.PoseLandmark.LEFT_HIP.value,
+                mp_pose.PoseLandmark.LEFT_KNEE.value,
+                mp_pose.PoseLandmark.LEFT_ANKLE.value
+            ])
             nose = pt(mp_pose.PoseLandmark.NOSE.value)
 
             # --- Metrics ---
             elbow_angle = int(calculate_angle(shoulder, elbow, wrist))
             spine_vec = np.array(shoulder) - np.array(hip)
             spine_unit = spine_vec / np.linalg.norm(spine_vec)
-            spine_angle = int(np.degrees(np.arccos(np.clip(np.dot(spine_unit, [0, -1]), -1.0, 1.0))))
+            spine_angle = int(np.degrees(np.arccos(
+                np.clip(np.dot(spine_unit, [0, -1]), -1.0, 1.0)
+            )))
             head_knee_dx = int(abs(nose[0] - knee[0]))
             leg_vec = np.array(ankle) - np.array(knee)
             leg_unit = leg_vec / np.linalg.norm(leg_vec)
-            foot_angle = int(np.degrees(np.arccos(np.clip(np.dot(leg_unit, [1, 0]), -1.0, 1.0))))
+            foot_angle = int(np.degrees(np.arccos(
+                np.clip(np.dot(leg_unit, [1, 0]), -1.0, 1.0)
+            )))
             if foot_angle > 90:
                 foot_angle = 180 - foot_angle
 
             # --- Pose Skeleton ---
-            mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+            mp_drawing.draw_landmarks(
+                frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS
+            )
 
             # --- HUD Metrics ---
             hud_y = 30
@@ -133,15 +153,24 @@ def generate_overlay_video(video_path: str, landmarks_json_path: str, output_pat
             feedback_y = int(min(nose[1] + 140, frame_height - 20))
             draw_text(frame, msg, (feedback_x, feedback_y), font_scale=1.2)
 
-            # --- Persistent Feedback (Top-right) ---
+            # --- Persistent Feedback ---
             y_offset = 40
             for i, (issue, times) in enumerate(sorted(persistent_issues.items())):
-                sorted_times = sorted(times)
-                if not sorted_times:
+                if not times:
                     continue
-                duration = f"[{sorted_times[0]}s]" if len(sorted_times) == 1 else f"[{sorted_times[0]}s - {sorted_times[-1]}s]"
-                draw_text(frame, f"- {issue} {duration}",
-                          (frame_width - 470, y_offset), font_scale=0.6, color=(0, 0, 0))
+                sorted_times = sorted(times)
+                duration = (
+                    f"[{sorted_times[0]}s]"
+                    if len(sorted_times) == 1
+                    else f"[{sorted_times[0]}s - {sorted_times[-1]}s]"
+                )
+                draw_text(
+                    frame,
+                    f"- {issue} {duration}",
+                    (frame_width - 470, y_offset),
+                    font_scale=0.6,
+                    color=(0, 0, 0)
+                )
                 y_offset += 25
 
         out.write(frame)
@@ -150,6 +179,35 @@ def generate_overlay_video(video_path: str, landmarks_json_path: str, output_pat
     cap.release()
     out.release()
     pose.close()
+
+    # ----------------------------------------
+    # FFmpeg: Convert RAW AVI → Final MP4
+    # ----------------------------------------
+    try:
+        subprocess.run(
+            [
+                "ffmpeg", "-y",
+                "-i", raw_output_path,
+                "-vcodec", "libx264",
+                "-crf", "23",
+                "-preset", "medium",
+                final_mp4_path,
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        # Delete raw AVI
+        try:
+            os.remove(raw_output_path)
+        except OSError:
+            pass
+    except Exception as e:
+        print(f"[Overlay] FFmpeg MP4 conversion failed: {e}")
+        raise RuntimeError("Failed converting overlay video to MP4")
+
+    # Now final output path is MP4
+    output_path = final_mp4_path
 
     # --- Save issues log ---
     issues_path = str(Path(output_path).with_suffix(".issues.json"))
