@@ -7,6 +7,8 @@ import Skeleton from "../components/Skeleton";
 export default function Home() {
   const [result, setResult] = useState<any>(null);
   const [showSkeleton, setShowSkeleton] = useState(false);
+  const [jobId, setJobId] = useState<string | null>(null);
+const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
   return (
     <main className="min-h-screen bg-gray-100 py-8 flex items-center justify-center">
@@ -16,13 +18,22 @@ export default function Home() {
         </h1>
 
         <div className="mb-8">
-          <VideoUploader onResult={(data) => setResult(data)} />
+          <VideoUploader 
+          onResult={(data) => setResult(data)}
+          onJobIdChange={(id) => setJobId(id)}
+          onUploadedFileNameChange={(name) => setUploadedFileName(name)}
+           />
         </div>
 
         {/* Display biomechanical analysis results */}
         {result && result.metrics && (
           <div className="mb-8">
-            <AnalysisResults data={result} />
+            <AnalysisResults
+             data={result} 
+             jobId={jobId||""}
+            fileName={uploadedFileName||""}
+            shotType={result.shot_type}
+             />
           </div>
         )}
 
