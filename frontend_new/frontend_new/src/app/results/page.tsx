@@ -3,7 +3,7 @@ import { useState } from "react";
 import VideoUploader from "../../components/VideoUploader";
 import AnalysisResults from "../../components/AnalysisResults";
 import Skeleton from "../../components/Skeleton";
-import '../styles/global.css';
+import '../global.css';
 
 export default function Home() {
   const [result, setResult] = useState<any>(null);
