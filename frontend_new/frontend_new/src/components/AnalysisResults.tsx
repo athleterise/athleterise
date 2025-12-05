@@ -1,5 +1,5 @@
 import { BACKEND_URL } from "../utils/api";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 
 interface AnalysisResultsProps {
@@ -50,6 +50,31 @@ export default function AnalysisResults({ data,jobId,fileName,shotType }: Analys
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
+
+  const [keyframeAvailable, setKeyframeAvailable] = useState(false);
+
+  useEffect(() => {
+    const checkKeyframeAvailability = async () => {
+      const maxRetries = 5;
+      let retries = 0;
+
+      while (retries < maxRetries) {
+        try {
+          const response = await fetch(keyframeUrl, { method: "HEAD" });
+          if (response.ok) {
+            setKeyframeAvailable(true);
+            break;
+          }
+        } catch (error) {
+          console.error("Error checking keyframe availability:", error);
+        }
+        retries++;
+        await new Promise((resolve) => setTimeout(resolve, 6000)); // Wait 6 seconds before retrying
+      }
+    };
+
+    checkKeyframeAvailability();
+  }, [keyframeUrl]);
 
   return (
     <div className="bg-white p-8 rounded-2xl shadow-lg">
@@ -287,7 +312,7 @@ export default function AnalysisResults({ data,jobId,fileName,shotType }: Analys
             <p className="text-gray-600">Pose landmarks and angle measurements at the optimal impact moment</p>
           </div>
 
-          {data.keyframe_url ? (
+          {keyframeAvailable ? (
             <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-xl shadow-lg">
               <div className="text-center mb-4">
                 <h4 className="text-lg font-semibold text-gray-800 mb-2">Annotated Keyframe</h4>
@@ -300,10 +325,6 @@ export default function AnalysisResults({ data,jobId,fileName,shotType }: Analys
                   alt="Annotated keyframe with pose landmarks and angles"
                   className="max-w-full h-auto rounded-lg shadow-xl mx-auto border-4 border-white"
                   style={{ maxHeight: '600px' }}
-                  onError={(e) => {
-                    console.error('Failed to load keyframe image:', e);
-                    e.currentTarget.style.display = 'none';
-                  }}
                 />
 
                 {/* Image overlay with info */}
