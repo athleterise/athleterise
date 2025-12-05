@@ -34,13 +34,12 @@ def generate_overlay_video(video_path: str, landmarks_json_path: str, output_pat
 
     pose = mp_pose.Pose(static_image_mode=False, model_complexity=1,
                         min_detection_confidence=0.5, min_tracking_confidence=0.5)
-    # Force WebM VP9 output since H264 is not available on Render
-    output_path = str(Path(output_path).with_suffix(".webm"))
 
-    # Use MJPEG inside an AVI container (100% supported)
-    output_path = str(Path(output_path).with_suffix(".avi"))
-    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+    # Use MP4 output with mp4v codec (universally supported)
+    output_path = str(Path(output_path).with_suffix(".mp4"))
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
+
 
 
 
