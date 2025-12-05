@@ -52,10 +52,10 @@ async def analyze_video(request: AnalysisRequest):
         overlay_avi = Path(RESULT_DIR) / f"{request.job_id}_overlay.avi"
         overlay_mp4 = Path(RESULT_DIR) / f"{request.job_id}_overlay.mp4"
 
-        if overlay_avi.exists():
-            overlay_file = overlay_avi
-        elif overlay_mp4.exists():
+        if overlay_mp4.exists():
             overlay_file = overlay_mp4
+        elif overlay_avi.exists():
+            overlay_file = overlay_avi
         else:
             overlay_file = None
 
