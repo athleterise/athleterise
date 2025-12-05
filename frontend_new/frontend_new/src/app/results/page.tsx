@@ -7,7 +7,9 @@ import '../global.css';
 
 export default function Home() {
   const [result, setResult] = useState<any>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
   const [showSkeleton, setShowSkeleton] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100 flex items-center justify-center">
@@ -18,13 +20,22 @@ export default function Home() {
 
         {/* Video Upload and Analysis */}
         <div className="mb-8">
-          <VideoUploader onResult={(data) => setResult(data)} />
+          <VideoUploader
+           onResult={(data) => setResult(data) } 
+           onJobIdChange={(id) => setJobId(id)} 
+           onUploadedFileNameChange={(name) => setUploadedFileName(name)}
+           />
         </div>
 
         {/* Analysis Results */}
         {result && result.metrics && (
           <div className="mb-8">
-            <AnalysisResults data={result} />
+            <AnalysisResults 
+            data={result} 
+            jobId={jobId || ""}
+            fileName={uploadedFileName || ""} 
+            shotType={result.shot_type}
+             />
           </div>
         )}
 

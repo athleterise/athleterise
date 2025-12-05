@@ -3,9 +3,11 @@ import { uploadVideo, analyzeVideo, testConnection } from "../utils/api";
 
 interface VideoUploaderProps {
   onResult: (data: any) => void;
+  onJobIdChange: (jobId: string | null) => void;
+  onUploadedFileNameChange: (name: string | null) => void;
 }
 
-export default function VideoUploader({ onResult }: VideoUploaderProps) {
+export default function VideoUploader({ onResult,onJobIdChange,onUploadedFileNameChange }: VideoUploaderProps) {
   const [file, setFile] = useState<File | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("");
@@ -34,6 +36,8 @@ export default function VideoUploader({ onResult }: VideoUploaderProps) {
     if (selectedFile) {
       setFile(selectedFile);
       setJobId(null);
+      onJobIdChange(null);
+      onUploadedFileNameChange(selectedFile.name);
       setStatus("");
     }
   };
@@ -47,6 +51,7 @@ export default function VideoUploader({ onResult }: VideoUploaderProps) {
       const data = await uploadVideo(file);
       console.log("Upload response:", data);
       setJobId(data.job_id);
+      onJobIdChange(data.job_id);
       setStatus(data.status);
     } catch (err) {
       console.error("Upload error:", err);
@@ -232,3 +237,7 @@ export default function VideoUploader({ onResult }: VideoUploaderProps) {
     </div>
   );
 }
+function onUploadedFileNameChange(name: string) {
+  throw new Error("Function not implemented.");
+}
+

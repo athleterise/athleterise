@@ -1,4 +1,3 @@
-// Force rebuild
 export const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ||
   "https://athleterise-backend.onrender.com";

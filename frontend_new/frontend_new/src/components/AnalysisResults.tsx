@@ -1,7 +1,11 @@
 import { BACKEND_URL } from "../utils/api";
 import { useState } from "react";
 
+
 interface AnalysisResultsProps {
+  fileName: string;
+  shotType: string;
+  jobId: string;
   data: {
     metrics: {
       front_elbow_angle: number;
@@ -26,9 +30,12 @@ interface AnalysisResultsProps {
   };
 }
 
-export default function AnalysisResults({ data }: AnalysisResultsProps) {
+export default function AnalysisResults({ data,jobId,fileName,shotType }: AnalysisResultsProps) {
   const [activeTab, setActiveTab] = useState<'metrics' | 'feedback' | 'keyframe'>('metrics');
 
+  const baseName = fileName.replace(/\.[^/.]+$/, "");
+  const keyframeUrl = `${BACKEND_URL}/static/results/${jobId}_${baseName}_${shotType}_keyframe.jpg`;
+  
   const getScoreColor = (score: number) => {
     if (score >= 8) return 'text-green-600';
     if (score >= 6) return 'text-yellow-600';
@@ -289,7 +296,7 @@ export default function AnalysisResults({ data }: AnalysisResultsProps) {
 
               <div className="relative">
                 <img
-                  src={`${BACKEND_URL}${data.keyframe_url}`}
+                  src={keyframeUrl}
                   alt="Annotated keyframe with pose landmarks and angles"
                   className="max-w-full h-auto rounded-lg shadow-xl mx-auto border-4 border-white"
                   style={{ maxHeight: '600px' }}
