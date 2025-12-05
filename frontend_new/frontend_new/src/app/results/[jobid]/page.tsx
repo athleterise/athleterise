@@ -1,11 +1,12 @@
+"use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import { useSearchParams } from "next/navigation";
 import { getResult } from "../../../utils/api";
 import PoseViewer from "../../../components/PoseViewer";
 
 export default function ResultPage() {
-  const router = useRouter();
-  const { jobId } = router.query as { jobId: string };
+  const searchParams = useSearchParams();
+  const jobId = searchParams.get("jobId");
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,21 +21,17 @@ export default function ResultPage() {
           setLoading(false);
           clearInterval(interval);
         }
-      } catch (err) {
-        console.error(err);
+      } catch (error) {
+        console.error("Error fetching result:", error);
       }
-    }, 2000);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [jobId]);
 
-  if (loading) return <p className="p-4">Processing video... please wait.</p>;
-  if (!data) return <p className="p-4">No data found</p>;
-
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h2 className="text-xl font-bold mb-2">Pose Landmarks</h2>
-      <PoseViewer data={data} />
+    <div>
+      {loading ? <p>Loading...</p> : <PoseViewer data={data} />}
     </div>
   );
 }
