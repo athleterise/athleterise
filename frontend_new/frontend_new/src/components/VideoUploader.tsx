@@ -7,7 +7,11 @@ interface VideoUploaderProps {
   onUploadedFileNameChange: (name: string | null) => void;
 }
 
-export default function VideoUploader({ onResult,onJobIdChange,onUploadedFileNameChange }: VideoUploaderProps) {
+export default function VideoUploader({
+  onResult,
+  onJobIdChange,
+  onUploadedFileNameChange,
+}: VideoUploaderProps) {
   const [file, setFile] = useState<File | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("");
@@ -15,6 +19,33 @@ export default function VideoUploader({ onResult,onJobIdChange,onUploadedFileNam
   const [shotType, setShotType] = useState<string>("cover_drive");
   const [connectionStatus, setConnectionStatus] = useState<string>("");
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // ---------------------------------------
+  // Helper function: Poll for MP4 readiness
+  // ---------------------------------------
+  async function waitForFile(
+    url: string,
+    maxRetries = 20,
+    delayMs = 3000
+  ): Promise<boolean> {
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const res = await fetch(url, { method: "HEAD" });
+        if (res.ok) {
+          console.log("MP4 is ready on server:", url);
+          return true;
+        }
+      } catch (err) {
+        console.warn("Polling error:", err);
+      }
+
+      console.log(`MP4 not ready yet. Retry ${i + 1}/${maxRetries}`);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+
+    console.error("MP4 never became available:", url);
+    return false;
+  }
 
   // Test backend connection on component mount
   useEffect(() => {
@@ -67,46 +98,37 @@ export default function VideoUploader({ onResult,onJobIdChange,onUploadedFileNam
     try {
       const analysisResult = await analyzeVideo(jobId, shotType);
 
-      // 🔍 Debug: print the raw backend response
       console.log("ANALYSIS RESULT RECEIVED:", analysisResult);
 
       setStatus("Analysis complete");
-
-      // Pass data to parent (for metrics display)
       onResult(analysisResult);
 
-      
-
       // -------------------------------
-      // AUTO-DOWNLOAD FEATURE STARTS
+      // MP4 POLLING + DOWNLOAD LOGIC
       // -------------------------------
       const backendUrl =
         process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-      
+
       if (analysisResult.overlay_video_url) {
-      
-        // Backend already returns a correct /static/... path
         const videoUrl = `${backendUrl}${analysisResult.overlay_video_url}`;
-      
-        console.log("Annotated MP4 will download after delay:", videoUrl);
-      
         const filename =
           analysisResult.overlay_video_url.split("/").pop() ||
           "annotated_video.mp4";
-      
-        // Delay due to Render static propagation
-        setTimeout(() => {
-          console.log("Triggering delayed download:", videoUrl);
+
+        console.log("Polling for MP4:", videoUrl);
+
+        const ready = await waitForFile(videoUrl, 20, 3000); // ~60 sec max
+
+        if (ready) {
+          console.log("MP4 FOUND — triggering download.");
           triggerAutoDownload(videoUrl, filename);
-        }, 40000);
-      
+        } else {
+          console.warn("MP4 never became available after polling.");
+        }
       } else {
         console.warn("Backend did not return overlay_video_url.");
       }
       // -------------------------------
-      // AUTO-DOWNLOAD FEATURE ENDS
-      // -------------------------------
-
 
     } catch (err) {
       console.error("Analysis failed with error:", err);
@@ -117,12 +139,6 @@ export default function VideoUploader({ onResult,onJobIdChange,onUploadedFileNam
   };
 
   const triggerAutoDownload = (url: string, filename: string) => {
-    // Disable auto-download when running locally
-    // if (typeof window !== "undefined" && window.location.hostname === "localhost") {
-    //   console.log("Skipping auto-download in local dev:", filename);
-    //   return;
-    // }
-
     const link = document.createElement("a");
     link.href = url;
     link.download = filename;
@@ -232,11 +248,11 @@ export default function VideoUploader({ onResult,onJobIdChange,onUploadedFileNam
       {isAnalyzing && (
         <div className="flex items-center justify-center">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-2"></div>
-          <span className="text-sm text-gray-600">Processing video analysis...</span>
+          <span className="text-sm text-gray-600">
+            Processing video analysis...
+          </span>
         </div>
       )}
     </div>
   );
 }
-
-
