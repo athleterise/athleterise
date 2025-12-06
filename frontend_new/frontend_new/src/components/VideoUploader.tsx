@@ -75,37 +75,38 @@ export default function VideoUploader({ onResult,onJobIdChange,onUploadedFileNam
       // Pass data to parent (for metrics display)
       onResult(analysisResult);
 
+      
+
       // -------------------------------
       // AUTO-DOWNLOAD FEATURE STARTS
       // -------------------------------
-
       const backendUrl =
         process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
-
-      // AUTO-DOWNLOAD ANNOTATED VIDEO ONLY (with delay)
-      // AUTO-DOWNLOAD ANNOTATED VIDEO ONLY (with delay)
-      if (analysisResult.video_path) {
-        const videoUrl = `${backendUrl}/static/${analysisResult.video_path}`;
-
-        console.log("Annotated video will download after delay:", videoUrl);
-
-        // Extract the correct extension (mp4)
-        const filename = analysisResult.video_path.split("/").pop() || "annotated_video.mp4";
-
-        // Render needs time for static file propagation
+      
+      if (analysisResult.overlay_video_url) {
+      
+        // Backend already returns a correct /static/... path
+        const videoUrl = `${backendUrl}${analysisResult.overlay_video_url}`;
+      
+        console.log("Annotated MP4 will download after delay:", videoUrl);
+      
+        const filename =
+          analysisResult.overlay_video_url.split("/").pop() ||
+          "annotated_video.mp4";
+      
+        // Delay due to Render static propagation
         setTimeout(() => {
           console.log("Triggering delayed download:", videoUrl);
           triggerAutoDownload(videoUrl, filename);
         }, 15000);
-
+      
       } else {
-        console.warn("No video_path returned from backend.");
+        console.warn("Backend did not return overlay_video_url.");
       }
-
-
       // -------------------------------
       // AUTO-DOWNLOAD FEATURE ENDS
       // -------------------------------
+
 
     } catch (err) {
       console.error("Analysis failed with error:", err);
@@ -237,7 +238,5 @@ export default function VideoUploader({ onResult,onJobIdChange,onUploadedFileNam
     </div>
   );
 }
-function onUploadedFileNameChange(name: string) {
-  throw new Error("Function not implemented.");
-}
+
 
