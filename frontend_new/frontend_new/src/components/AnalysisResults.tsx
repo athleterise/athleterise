@@ -34,7 +34,7 @@ export default function AnalysisResults({ data,jobId,fileName,shotType }: Analys
   const [activeTab, setActiveTab] = useState<'metrics' | 'feedback' | 'keyframe'>('metrics');
 
   const baseName = fileName.replace(/\.[^/.]+$/, "");
-  const keyframeUrl = `${BACKEND_URL}/static/results/${jobId}_${baseName}_keyframe.jpg`;
+  const keyframeUrl = `${BACKEND_URL}/static/${jobId}_${baseName}_keyframe.jpg`;
   
   const getScoreColor = (score: number) => {
     if (score >= 8) return 'text-green-600';
