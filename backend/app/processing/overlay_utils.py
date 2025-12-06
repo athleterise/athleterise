@@ -18,12 +18,15 @@ def calculate_angle(a, b, c):
 
 def generate_overlay_video(video_path: str, landmarks_json_path: str, output_path: str):
     """
-    Generate AVI overlay with OpenCV, then convert to MP4 using ffmpeg.
+    CPU-safe overlay → AVI → optimized MP4.
+    Works reliably on Render 1 vCPU.
     """
 
     output_path = Path(output_path)
+
+    # Always generate AVI first
+    avi_path = output_path.with_suffix(".avi")
     mp4_path = output_path.with_suffix(".mp4")
-    temp_avi_path = output_path.with_suffix(".avi")
 
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -33,9 +36,8 @@ def generate_overlay_video(video_path: str, landmarks_json_path: str, output_pat
     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv2.CAP_PROP_FPS) or 25
 
-    # OpenCV AVI writer
     avi_fourcc = cv2.VideoWriter_fourcc(*"XVID")
-    out = cv2.VideoWriter(str(temp_avi_path), avi_fourcc, fps, (frame_width, frame_height))
+    out = cv2.VideoWriter(str(avi_path), avi_fourcc, fps, (frame_width, frame_height))
 
     pose = mp_pose.Pose(
         static_image_mode=False,
@@ -53,13 +55,6 @@ def generate_overlay_video(video_path: str, landmarks_json_path: str, output_pat
         cv2.putText(frame, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX,
                     font_scale, color, thickness, cv2.LINE_AA)
 
-    def log_issue(issue, t):
-        if issue not in persistent_issues:
-            persistent_issues[issue] = []
-        ts = round(float(t), 1)
-        if ts not in persistent_issues[issue]:
-            persistent_issues[issue].append(ts)
-
     frame_count = 0
 
     while cap.isOpened():
@@ -67,15 +62,14 @@ def generate_overlay_video(video_path: str, landmarks_json_path: str, output_pat
         if not ret:
             break
 
-        time_sec = frame_count / fps
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = pose.process(rgb)
 
         if results.pose_landmarks:
             lm = results.pose_landmarks.landmark
 
-            def pt(idx):
-                return [lm[idx].x * frame_width, lm[idx].y * frame_height]
+            def pt(i):
+                return [lm[i].x * frame_width, lm[i].y * frame_height]
 
             shoulder = pt(mp_pose.PoseLandmark.LEFT_SHOULDER.value)
             elbow = pt(mp_pose.PoseLandmark.LEFT_ELBOW.value)
@@ -89,17 +83,13 @@ def generate_overlay_video(video_path: str, landmarks_json_path: str, output_pat
 
             spine_vec = np.array(shoulder) - np.array(hip)
             spine_unit = spine_vec / np.linalg.norm(spine_vec)
-            spine_angle = int(np.degrees(np.arccos(
-                np.clip(np.dot(spine_unit, [0, -1]), -1.0, 1.0)
-            )))
+            spine_angle = int(np.degrees(np.arccos(np.clip(np.dot(spine_unit, [0, -1]), -1.0, 1.0))))
 
             head_knee_dx = int(abs(nose[0] - knee[0]))
 
             leg_vec = np.array(ankle) - np.array(knee)
             leg_unit = leg_vec / np.linalg.norm(leg_vec)
-            foot_angle = int(np.degrees(np.arccos(
-                np.clip(np.dot(leg_unit, [1, 0]), -1.0, 1.0)
-            )))
+            foot_angle = int(np.degrees(np.arccos(np.clip(np.dot(leg_unit, [1, 0]), -1.0, 1.0))))
             if foot_angle > 90:
                 foot_angle = 180 - foot_angle
 
@@ -117,21 +107,31 @@ def generate_overlay_video(video_path: str, landmarks_json_path: str, output_pat
     out.release()
     pose.close()
 
-    # Convert AVI → MP4 using ffmpeg
+    # ---------------------------------------------------
+    # CPU-SAFE MP4 CONVERSION (1 thread, ultrafast, CRF 32)
+    # ---------------------------------------------------
     ffmpeg_cmd = [
         "ffmpeg", "-y",
-        "-i", str(temp_avi_path),
+        "-i", str(avi_path),
         "-vcodec", "libx264",
-        "-acodec", "aac",
+        "-preset", "ultrafast",
+        "-crf", "32",
+        "-pix_fmt", "yuv420p",   # browser safe
+        "-threads", "1",         # do NOT spike CPU
         str(mp4_path),
     ]
 
-    subprocess.run(ffmpeg_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.run(ffmpeg_cmd)
 
-    # Remove temp AVI
-    temp_avi_path.unlink(missing_ok=True)
+    # Validate output
+    if mp4_path.exists() and mp4_path.stat().st_size > 1000:
+        avi_path.unlink(missing_ok=True)  # cleanup
+    else:
+        # MP4 failed → keep AVI as fallback
+        mp4_path.unlink(missing_ok=True)
+        mp4_path = avi_path
 
-    # Write issues log
+    # Save issues log
     issues_path = str(mp4_path.with_suffix(".issues.json"))
     with open(issues_path, "w") as f:
         json.dump(persistent_issues, f, indent=2)
@@ -145,10 +145,14 @@ def generate_evaluation_json(issue_log_path: str, output_json_path: str):
 
     def evaluate(key, desc):
         t = issues.get(key, [])
-        if not t: return 10, f"Excellent. {desc}"
-        elif len(t) <= 2: return 8, f"Minor inconsistency. {desc}"
-        elif len(t) <= 5: return 6, f"Needs improvement. {desc}"
-        else: return 4, f"Major issue. {desc}"
+        if not t:
+            return 10, f"Excellent. {desc}"
+        elif len(t) <= 2:
+            return 8, f"Minor inconsistency. {desc}"
+        elif len(t) <= 5:
+            return 6, f"Needs improvement. {desc}"
+        else:
+            return 4, f"Major issue. {desc}"
 
     evaluation = {
         "Footwork": {
