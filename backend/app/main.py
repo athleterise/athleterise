@@ -114,8 +114,20 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
 # ---------------------------
 @app.get("/result/{job_id}")
 async def get_result(job_id: str):
-    p = Path(result_path(job_id))
-    if p.exists():
-        return JSONResponse(status_code=200, content=json.loads(p.read_text()))
-    else:
+    analysis_path = Path(result_path(job_id))
+
+    if not analysis_path.exists():
         return JSONResponse(status_code=404, content={"error": "result not ready"})
+
+    # Read the JSON result
+    data = json.loads(analysis_path.read_text())
+
+    # Check if overlay video exists
+    overlay_mp4 = results_dir / f"{job_id}_overlay.mp4"
+    if overlay_mp4.exists():
+        data["overlay_video_url"] = f"/static/{job_id}_overlay.mp4"
+    else:
+        data["overlay_video_url"] = None
+
+    return JSONResponse(status_code=200, content=data)
+
