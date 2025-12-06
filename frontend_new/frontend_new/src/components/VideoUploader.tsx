@@ -98,7 +98,7 @@ export default function VideoUploader({ onResult,onJobIdChange,onUploadedFileNam
         setTimeout(() => {
           console.log("Triggering delayed download:", videoUrl);
           triggerAutoDownload(videoUrl, filename);
-        }, 15000);
+        }, 40000);
       
       } else {
         console.warn("Backend did not return overlay_video_url.");
