@@ -18,6 +18,7 @@ export default function VideoUploader({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [shotType, setShotType] = useState<string>("cover_drive");
   const [connectionStatus, setConnectionStatus] = useState<string>("");
+
   const videoRef = useRef<HTMLVideoElement>(null);
 
   // Test backend connectivity
@@ -139,7 +140,8 @@ export default function VideoUploader({
         <button
           onClick={handleUpload}
           disabled={!file}
-          className="flex-2 px-6 py-3 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 disabled:bg-gray-400"
+          className="flex-2 px-6 py-3 bg-blue-600 text-white rounded-full shadow-md 
+                     hover:bg-blue-700 disabled:bg-gray-400"
         >
           Upload Video
         </button>
@@ -147,7 +149,8 @@ export default function VideoUploader({
         <button
           onClick={handleAnalyze}
           disabled={!jobId || isAnalyzing}
-          className="flex-1 px-6 py-3 bg-green-600 text-white rounded-full shadow-md hover:bg-green-700 disabled:bg-gray-400"
+          className="flex-1 px-6 py-3 bg-green-600 text-white rounded-full shadow-md 
+                     hover:bg-green-700 disabled:bg-gray-400"
         >
           {isAnalyzing ? "Analyzing..." : `Analyze ${shotType.replace("_", " ")}`}
         </button>
@@ -159,8 +162,19 @@ export default function VideoUploader({
           <p className="text-sm text-gray-700">
             <span className="font-medium">Status:</span> {status}
           </p>
-          {jobId && <p className="text-sm text-gray-600">Job ID: {jobId}</p>}
+          {jobId && (
+            <p className="text-sm text-gray-600">
+              <span className="font-medium">Job ID:</span> {jobId}
+            </p>
+          )}
         </div>
+      )}
+
+      {/* Backend Connection Status */}
+      {connectionStatus && (
+        <p className="text-center text-sm text-gray-600 mt-4">
+          {connectionStatus}
+        </p>
       )}
     </div>
   );
