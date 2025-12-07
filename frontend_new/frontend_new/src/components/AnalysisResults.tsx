@@ -25,7 +25,7 @@ interface AnalysisResultsProps {
       severity: "good" | "warning" | "error";
     }>;
     keyframe_url?: string;
-    overlay_video_url?: string; // Added safety typing
+    overlay_video_url?: string;
     shot_type: string;
   };
 }
@@ -42,6 +42,9 @@ export default function AnalysisResults({
 
   const baseName = fileName.replace(/\.[^/.]+$/, "");
   const keyframeUrl = `${BACKEND_URL}/static/${jobId}_${baseName}_keyframe.jpg`;
+
+  // 🔥 ALWAYS USE MP4 — ignore backend URLs completely
+  const annotatedVideoUrl = `${BACKEND_URL}/static/${jobId}_overlay.mp4`;
 
   const getScoreColor = (score: number) => {
     if (score >= 8) return "text-green-600";
@@ -80,7 +83,7 @@ export default function AnalysisResults({
           console.error("Error checking keyframe availability:", error);
         }
         retries++;
-        await new Promise((resolve) => setTimeout(resolve, 6000)); // Wait 6 seconds before retrying
+        await new Promise((resolve) => setTimeout(resolve, 6000));
       }
     };
 
@@ -94,22 +97,20 @@ export default function AnalysisResults({
         <p className="text-gray-600">Detailed insights into your cricket shot</p>
       </div>
 
-      {/* ---------------------------------- */}
-      {/* 🎉 DOWNLOAD ANNOTATED VIDEO BUTTON */}
-      {/* ---------------------------------- */}
-      {data?.overlay_video_url && (
-        <div className="text-center mb-8">
-          <a
-            href={`${BACKEND_URL}${data.overlay_video_url}`}
-            download={`${jobId}_overlay.mp4`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition"
-          >
-            Download Annotated Video (MP4)
-          </a>
-        </div>
-      )}
+      {/* ------------------------------- */}
+      {/*  ✔ DOWNLOAD MP4 BUTTON ALWAYS   */}
+      {/* ------------------------------- */}
+      <div className="text-center mb-8">
+        <a
+          href={annotatedVideoUrl}
+          download={`${jobId}_overlay.mp4`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition"
+        >
+          Download Annotated Video (MP4)
+        </a>
+      </div>
 
       {/* Tab Navigation */}
       <div className="flex justify-center bg-gray-100 rounded-full p-1 mb-8">
@@ -145,7 +146,7 @@ export default function AnalysisResults({
         </button>
       </div>
 
-      {/* Render Active Tab */}
+      {/* -------------------- METRICS TAB -------------------- */}
       {activeTab === "metrics" && (
         <div className="space-y-6">
           <div className="text-center">
@@ -165,6 +166,7 @@ export default function AnalysisResults({
               </div>
               <h4 className="text-xl font-bold text-gray-800">Arm Mechanics</h4>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-400">
                 <div className="flex justify-between items-center mb-2">
@@ -185,7 +187,7 @@ export default function AnalysisResults({
                         (data.metrics.front_elbow_angle / 180) * 100
                       )}%`,
                     }}
-                  ></div>
+                  />
                 </div>
               </div>
 
@@ -208,7 +210,7 @@ export default function AnalysisResults({
                         (data.metrics.back_elbow_angle / 120) * 100
                       )}%`,
                     }}
-                  ></div>
+                  />
                 </div>
               </div>
             </div>
@@ -224,6 +226,7 @@ export default function AnalysisResults({
                 Torso & Shoulder
               </h4>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-400">
                 <div className="flex justify-between items-center mb-2">
@@ -246,7 +249,7 @@ export default function AnalysisResults({
                         (data.metrics.torso_lean / 30) * 100
                       )}%`,
                     }}
-                  ></div>
+                  />
                 </div>
               </div>
 
@@ -269,7 +272,7 @@ export default function AnalysisResults({
                         (data.metrics.shoulder_alignment / 40) * 100
                       )}%`,
                     }}
-                  ></div>
+                  />
                 </div>
               </div>
             </div>
@@ -283,6 +286,7 @@ export default function AnalysisResults({
               </div>
               <h4 className="text-xl font-bold text-gray-800">Lower Body</h4>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-purple-400">
                 <div className="flex justify-between items-center mb-2">
@@ -303,7 +307,7 @@ export default function AnalysisResults({
                         (data.metrics.front_knee_angle / 120) * 100
                       )}%`,
                     }}
-                  ></div>
+                  />
                 </div>
               </div>
 
@@ -326,7 +330,7 @@ export default function AnalysisResults({
                         (data.metrics.back_knee_angle / 180) * 100
                       )}%`,
                     }}
-                  ></div>
+                  />
                 </div>
               </div>
             </div>
@@ -342,6 +346,7 @@ export default function AnalysisResults({
                 Additional Metrics
               </h4>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-orange-400">
                 <div className="flex justify-between items-center mb-2">
@@ -362,7 +367,7 @@ export default function AnalysisResults({
                         (data.metrics.hip_rotation / 60) * 100
                       )}%`,
                     }}
-                  ></div>
+                  />
                 </div>
               </div>
 
@@ -385,7 +390,7 @@ export default function AnalysisResults({
                         (data.metrics.wrist_angle / 180) * 100
                       )}%`,
                     }}
-                  ></div>
+                  />
                 </div>
               </div>
             </div>
@@ -393,6 +398,7 @@ export default function AnalysisResults({
         </div>
       )}
 
+      {/* -------------------- FEEDBACK TAB -------------------- */}
       {activeTab === "feedback" && (
         <div className="space-y-6">
           <div className="text-center">
@@ -423,7 +429,7 @@ export default function AnalysisResults({
                           ? "bg-yellow-500"
                           : "bg-red-500"
                       }`}
-                    ></div>
+                    />
                     <h4 className="text-lg font-bold text-gray-800">
                       {item.category}
                     </h4>
@@ -441,6 +447,7 @@ export default function AnalysisResults({
                     </div>
                   )}
                 </div>
+
                 <p className="text-sm leading-relaxed">{item.message}</p>
 
                 {item.score && (
@@ -455,7 +462,7 @@ export default function AnalysisResults({
                             : "bg-red-500"
                         }`}
                         style={{ width: `${item.score * 10}%` }}
-                      ></div>
+                      />
                     </div>
                   </div>
                 )}
@@ -465,6 +472,7 @@ export default function AnalysisResults({
         </div>
       )}
 
+      {/* -------------------- KEYFRAME TAB -------------------- */}
       {activeTab === "keyframe" && (
         <div className="space-y-6">
           <div className="text-center">
