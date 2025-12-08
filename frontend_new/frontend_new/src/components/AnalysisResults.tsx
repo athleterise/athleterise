@@ -174,7 +174,7 @@ export default function AnalysisResults({
                     Front Elbow Angle
                   </span>
                   <span className="text-2xl font-bold text-blue-600">
-                    {data.metrics.front_elbow_angle}°
+                    {data.metrics.front_elbow_angle.toFixed(2)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">Ideal: 150-170°</div>
@@ -197,7 +197,7 @@ export default function AnalysisResults({
                     Back Elbow Angle
                   </span>
                   <span className="text-2xl font-bold text-blue-600">
-                    {data.metrics.back_elbow_angle}°
+                    {data.metrics.back_elbow_angle.toFixed(2)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">Ideal: 70-100°</div>
@@ -234,7 +234,7 @@ export default function AnalysisResults({
                     Torso Lean
                   </span>
                   <span className="text-2xl font-bold text-green-600">
-                    {data.metrics.torso_lean}°
+                    {data.metrics.torso_lean.toFixed(2)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">
@@ -259,7 +259,7 @@ export default function AnalysisResults({
                     Shoulder Alignment
                   </span>
                   <span className="text-2xl font-bold text-green-600">
-                    {data.metrics.shoulder_alignment}°
+                    {data.metrics.shoulder_alignment.toFixed(2)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">Ideal: 15-30°</div>
@@ -294,7 +294,7 @@ export default function AnalysisResults({
                     Front Knee Angle
                   </span>
                   <span className="text-2xl font-bold text-purple-600">
-                    {data.metrics.front_knee_angle}°
+                    {data.metrics.front_knee_angle.toFixed(2)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">Ideal: 80-100°</div>
@@ -317,7 +317,7 @@ export default function AnalysisResults({
                     Back Knee Angle
                   </span>
                   <span className="text-2xl font-bold text-purple-600">
-                    {data.metrics.back_knee_angle}°
+                    {data.metrics.back_knee_angle.toFixed(2)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">Ideal: 120-150°</div>
@@ -354,7 +354,7 @@ export default function AnalysisResults({
                     Hip Rotation
                   </span>
                   <span className="text-2xl font-bold text-orange-600">
-                    {data.metrics.hip_rotation}°
+                    {data.metrics.hip_rotation.toFixed(2)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">Ideal: 30-50°</div>
@@ -377,7 +377,7 @@ export default function AnalysisResults({
                     Wrist Angle
                   </span>
                   <span className="text-2xl font-bold text-orange-600">
-                    {data.metrics.wrist_angle}°
+                    {data.metrics.wrist_angle.toFixed(2)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">Ideal: 150-170°</div>
