@@ -30,9 +30,17 @@ export const uploadVideo = async (file: File) => {
 };
 
 export const getResult = async (jobId: string) => {
-  const res = await fetch(`${BACKEND_URL}/result/${jobId}`);
-  if (res.status === 200) return res.json();
-  return null;
+  try {
+    const res = await fetch(`${BACKEND_URL}/result/${jobId}`);
+    if (!res.ok) {
+      console.error(`Error fetching result: ${res.status} - ${res.statusText}`);
+      return null;
+    }
+    return res.json();
+  } catch (error) {
+    console.error("Error in getResult:", error);
+    return null;
+  }
 };
 
 export const analyzeVideo = async (jobId: string, shotType: string) => {
@@ -46,9 +54,12 @@ export const analyzeVideo = async (jobId: string, shotType: string) => {
   });
 
   if (!res.ok) {
+    console.error("Analyze video error:", await res.text()); // Debugging log
     throw new Error(`Backend error: ${res.status}`);
   }
 
-  return res.json();
+  const result = await res.json();
+  console.log("Analysis result:", result); // Debugging log
+  return result;
 };
 

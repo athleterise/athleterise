@@ -68,6 +68,10 @@ export default function VideoUploader({
 
     try {
       const analysisResult = await analyzeVideo(jobId, shotType);
+      if (!analysisResult || !analysisResult.metrics) {
+        console.error("Invalid analysis result:", analysisResult); // Debugging log
+        throw new Error("Analysis result is incomplete or invalid");
+      }
       setStatus("Analysis complete");
       onResult(analysisResult);
     } catch (err) {

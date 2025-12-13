@@ -47,8 +47,17 @@ export default function AnalysisResults({
   const annotatedVideoUrl = `${BACKEND_URL}/static/${jobId}_overlay.mp4`;
 
   const safeToFixed = (value: number | undefined, decimals: number = 2) => {
-    return typeof value === "number" ? value.toFixed(decimals) : "N/A";
+    if (typeof value !== "number") {
+      console.warn("Invalid metric value:", value); // Debugging log
+      return "N/A";
+    }
+    return value.toFixed(decimals);
   };
+
+  // Debugging: Log the metrics data to verify its structure
+  useEffect(() => {
+    console.log("Metrics data:", data.metrics);
+  }, [data.metrics]);
 
   const getScoreColor = (score: number) => {
     if (score >= 8) return "text-green-600";
