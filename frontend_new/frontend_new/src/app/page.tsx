@@ -26,16 +26,17 @@ const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
         </div>
 
         {/* Display biomechanical analysis results */}
-        {result && result.metrics && (
+        {result && result.metrics && jobId && uploadedFileName && (
           <div className="mb-8">
             <AnalysisResults
-             data={result} 
-             jobId={jobId||""}
-            fileName={uploadedFileName||""}
-            shotType={result.shot_type}
-             />
+              data={result}
+              jobId={jobId}
+              fileName={uploadedFileName}
+              shotType={result.shot_type}
+            />
           </div>
         )}
+
 
         {/* Display pose skeleton */}
         {result && result.frames && (
