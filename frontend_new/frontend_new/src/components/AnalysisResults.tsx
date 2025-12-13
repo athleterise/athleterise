@@ -54,6 +54,11 @@ export default function AnalysisResults({
     return value.toFixed(decimals);
   };
 
+  // Debugging: Log the entire data object to verify its structure
+  useEffect(() => {
+    console.log("Analysis data:", data);
+  }, [data]);
+
   // Debugging: Log the metrics data to verify its structure
   useEffect(() => {
     console.log("Metrics data:", data.metrics);
@@ -83,7 +88,7 @@ export default function AnalysisResults({
   useEffect(() => {
     const checkKeyframeAvailability = async () => {
       if (!data.keyframe_url) {
-        console.warn("Keyframe URL is missing");
+        console.warn("Keyframe URL is missing"); // Debugging log
         return;
       }
 
