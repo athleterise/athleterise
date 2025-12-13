@@ -46,6 +46,10 @@ export default function AnalysisResults({
   // 🔥 ALWAYS USE MP4 — ignore backend URLs completely
   const annotatedVideoUrl = `${BACKEND_URL}/static/${jobId}_overlay.mp4`;
 
+  const safeToFixed = (value: number | undefined, decimals: number = 2) => {
+    return typeof value === "number" ? value.toFixed(decimals) : "N/A";
+  };
+
   const getScoreColor = (score: number) => {
     if (score >= 8) return "text-green-600";
     if (score >= 6) return "text-yellow-600";
@@ -174,7 +178,7 @@ export default function AnalysisResults({
                     Front Elbow Angle
                   </span>
                   <span className="text-2xl font-bold text-blue-600">
-                    {data.metrics.front_elbow_angle.toFixed(2)}°
+                    {safeToFixed(data.metrics.front_elbow_angle)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">Ideal: 150-170°</div>
@@ -197,7 +201,7 @@ export default function AnalysisResults({
                     Back Elbow Angle
                   </span>
                   <span className="text-2xl font-bold text-blue-600">
-                    {data.metrics.back_elbow_angle.toFixed(2)}°
+                    {safeToFixed(data.metrics.back_elbow_angle)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">Ideal: 70-100°</div>
@@ -234,7 +238,7 @@ export default function AnalysisResults({
                     Torso Lean
                   </span>
                   <span className="text-2xl font-bold text-green-600">
-                    {data.metrics.torso_lean.toFixed(2)}°
+                    {safeToFixed(data.metrics.torso_lean)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">
@@ -259,7 +263,7 @@ export default function AnalysisResults({
                     Shoulder Alignment
                   </span>
                   <span className="text-2xl font-bold text-green-600">
-                    {data.metrics.shoulder_alignment.toFixed(2)}°
+                    {safeToFixed(data.metrics.shoulder_alignment)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">Ideal: 15-30°</div>
@@ -294,7 +298,7 @@ export default function AnalysisResults({
                     Front Knee Angle
                   </span>
                   <span className="text-2xl font-bold text-purple-600">
-                    {data.metrics.front_knee_angle.toFixed(2)}°
+                    {safeToFixed(data.metrics.front_knee_angle)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">Ideal: 80-100°</div>
@@ -317,7 +321,7 @@ export default function AnalysisResults({
                     Back Knee Angle
                   </span>
                   <span className="text-2xl font-bold text-purple-600">
-                    {data.metrics.back_knee_angle.toFixed(2)}°
+                    {safeToFixed(data.metrics.back_knee_angle)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">Ideal: 120-150°</div>
@@ -354,7 +358,7 @@ export default function AnalysisResults({
                     Hip Rotation
                   </span>
                   <span className="text-2xl font-bold text-orange-600">
-                    {data.metrics.hip_rotation.toFixed(2)}°
+                    {safeToFixed(data.metrics.hip_rotation)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">Ideal: 30-50°</div>
@@ -377,7 +381,7 @@ export default function AnalysisResults({
                     Wrist Angle
                   </span>
                   <span className="text-2xl font-bold text-orange-600">
-                    {data.metrics.wrist_angle.toFixed(2)}°
+                    {safeToFixed(data.metrics.wrist_angle)}°
                   </span>
                 </div>
                 <div className="text-xs text-gray-500">Ideal: 150-170°</div>
