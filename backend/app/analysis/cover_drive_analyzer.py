@@ -109,7 +109,7 @@ class CoverDriveAnalyzer:
         
         # Find frame with maximum velocity (impact moment)
         if velocities:
-            keyframe_idx, _ = max(velocities, key=lambda x: x[1])+8
+            keyframe_idx, _ = max(velocities, key=lambda x: x[1])
         else:
             keyframe_idx = total_frames // 2
         
