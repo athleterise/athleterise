@@ -165,7 +165,15 @@ class CoverDriveAnalyzer:
             metrics['front_elbow_angle'] = self.calculate_angle(left_shoulder, left_elbow, left_wrist)
             
             # Back elbow angle (right arm)
-            metrics['back_elbow_angle'] = self.calculate_angle(right_shoulder, right_elbow, right_wrist)
+            #metrics['back_elbow_angle'] = self.calculate_angle(right_shoulder, right_elbow, right_wrist)
+            elbow_internal = self.calculate_angle(
+                right_shoulder, right_elbow, right_wrist
+            )
+            
+            # Convert to flexion angle
+            back_elbow_angle = 180 - elbow_internal
+            metrics['back_elbow_angle'] = back_elbow_angle
+
             
             # Torso and shoulder
             left_hip = get_point('LEFT_HIP')
@@ -184,10 +192,21 @@ class CoverDriveAnalyzer:
             # Shoulder alignment (rotation)
             shoulder_line = right_shoulder - left_shoulder
             horizontal = np.array([1, 0])
-            shoulder_angle = np.degrees(np.arccos(np.clip(
-                np.dot(shoulder_line, horizontal) / np.linalg.norm(shoulder_line), -1, 1
-            )))
-            metrics['shoulder_alignment'] = shoulder_angle
+            # shoulder_angle = np.degrees(np.arccos(np.clip(
+            #     np.dot(shoulder_line, horizontal) / np.linalg.norm(shoulder_line), -1, 1
+            # )))
+            # metrics['shoulder_alignment'] = shoulder_angle
+            raw_angle = np.degrees(np.arccos(
+                np.clip(
+                    np.dot(shoulder_line, horizontal) /
+                    np.linalg.norm(shoulder_line),
+                    -1, 1
+                )
+            ))
+        
+            shoulder_alignment = min(raw_angle, 180 - raw_angle)
+            metrics['shoulder_alignment'] = shoulder_alignment
+
             
             # Lower body
             left_knee = get_point('LEFT_KNEE')
@@ -206,11 +225,18 @@ class CoverDriveAnalyzer:
             hip_angle = np.degrees(np.arccos(np.clip(
                 np.dot(hip_vector, horizontal) / np.linalg.norm(hip_vector), -1, 1
             )))
+            hip_angle = min(hip_angle, 180 - hip_angle)
             metrics['hip_rotation'] = hip_angle
             
             # Wrist angle (approximation using elbow-wrist-hand)
             # For wrist angle, we need hand landmarks, using wrist as approximation
-            metrics['wrist_angle'] = self.calculate_angle(left_elbow, left_wrist, left_wrist + np.array([1, 0]))
+            wrist_angle = self.calculate_angle(
+                left_elbow,
+                left_wrist,
+                left_wrist + (left_wrist - left_elbow)
+            )
+            metrics['wrist_angle'] = min(wrist_angle, 180 - wrist_angle)
+
             
             # Head position relative to front knee
             nose = get_point('NOSE')
