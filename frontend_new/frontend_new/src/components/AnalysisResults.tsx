@@ -85,33 +85,57 @@ export default function AnalysisResults({
 
   const [keyframeAvailable, setKeyframeAvailable] = useState(false);
 
+  // useEffect(() => {
+  //   const checkKeyframeAvailability = async () => {
+  //     if (!data.keyframe_url) {
+  //       console.warn("Keyframe URL is missing"); // Debugging log
+  //       return;
+  //     }
+
+  //     const maxRetries = 5;
+  //     let retries = 0;
+
+  //     while (retries < maxRetries) {
+  //       try {
+  //         const response = await fetch(keyframeUrl, { method: "HEAD" });
+  //         if (response.ok) {
+  //           setKeyframeAvailable(true);
+  //           break;
+  //         }
+  //       } catch (error) {
+  //         console.error("Error checking keyframe availability:", error);
+  //       }
+  //       retries++;
+  //       await new Promise((resolve) => setTimeout(resolve, 6000));
+  //     }
+  //   };
+
+  //   checkKeyframeAvailability();
+  // }, [data.keyframe_url]);
   useEffect(() => {
-    const checkKeyframeAvailability = async () => {
-      if (!data.keyframe_url) {
-        console.warn("Keyframe URL is missing"); // Debugging log
-        return;
-      }
+  const checkKeyframeAvailability = async () => {
+    const maxRetries = 5;
+    let retries = 0;
 
-      const maxRetries = 5;
-      let retries = 0;
-
-      while (retries < maxRetries) {
-        try {
-          const response = await fetch(keyframeUrl, { method: "HEAD" });
-          if (response.ok) {
-            setKeyframeAvailable(true);
-            break;
-          }
-        } catch (error) {
-          console.error("Error checking keyframe availability:", error);
+    while (retries < maxRetries) {
+      try {
+        const response = await fetch(keyframeUrl, { method: "HEAD" });
+        if (response.ok) {
+          setKeyframeAvailable(true);
+          return;
         }
-        retries++;
-        await new Promise((resolve) => setTimeout(resolve, 6000));
+      } catch (err) {
+        console.error("Keyframe check failed", err);
       }
-    };
 
-    checkKeyframeAvailability();
-  }, [data.keyframe_url]);
+      retries++;
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+  };
+
+  checkKeyframeAvailability();
+}, [keyframeUrl]);
+
 
   return (
     <div className="bg-white p-8 rounded-2xl shadow-lg">
