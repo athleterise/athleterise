@@ -228,14 +228,24 @@ class CoverDriveAnalyzer:
             hip_angle = min(hip_angle, 180 - hip_angle)
             metrics['hip_rotation'] = hip_angle
             
-            # Wrist angle (approximation using elbow-wrist-hand)
-            # For wrist angle, we need hand landmarks, using wrist as approximation
-            wrist_angle = self.calculate_angle(
-                left_elbow,
-                left_wrist,
-                left_wrist + (left_wrist - left_elbow)
-            )
-            metrics['wrist_angle'] = min(wrist_angle, 180 - wrist_angle)
+            # Forearm vector
+            forearm = left_wrist - left_elbow
+            
+            # Vertical reference
+            vertical = np.array([0, -1])
+            
+            wrist_angle = np.degrees(np.arccos(
+                np.clip(
+                    np.dot(forearm, vertical) /
+                    np.linalg.norm(forearm),
+                    -1, 1
+                )
+            ))
+            
+            # Acute angle
+            wrist_angle = min(wrist_angle, 180 - wrist_angle)
+            metrics['wrist_angle'] = wrist_angle
+
 
             
             # Head position relative to front knee
