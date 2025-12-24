@@ -85,57 +85,79 @@ export default function AnalysisResults({
 
   const [keyframeAvailable, setKeyframeAvailable] = useState(false);
 
-  // useEffect(() => {
-  //   const checkKeyframeAvailability = async () => {
-  //     if (!data.keyframe_url) {
-  //       console.warn("Keyframe URL is missing"); // Debugging log
-  //       return;
-  //     }
-
-  //     const maxRetries = 5;
-  //     let retries = 0;
-
-  //     while (retries < maxRetries) {
-  //       try {
-  //         const response = await fetch(keyframeUrl, { method: "HEAD" });
-  //         if (response.ok) {
-  //           setKeyframeAvailable(true);
-  //           break;
-  //         }
-  //       } catch (error) {
-  //         console.error("Error checking keyframe availability:", error);
-  //       }
-  //       retries++;
-  //       await new Promise((resolve) => setTimeout(resolve, 6000));
-  //     }
-  //   };
-
-  //   checkKeyframeAvailability();
-  // }, [data.keyframe_url]);
   useEffect(() => {
-  const checkKeyframeAvailability = async () => {
-    const maxRetries = 5;
-    let retries = 0;
+    const checkKeyframeAvailability = async () => {
+      const maxRetries = 5;
+      let retries = 0;
 
-    while (retries < maxRetries) {
-      try {
-        const response = await fetch(keyframeUrl, { method: "HEAD" });
-        if (response.ok) {
-          setKeyframeAvailable(true);
-          return;
+      while (retries < maxRetries) {
+        try {
+          const response = await fetch(keyframeUrl, { method: "HEAD" });
+          if (response.ok) {
+            setKeyframeAvailable(true);
+            return;
+          }
+        } catch (err) {
+          console.error("Keyframe check failed", err);
         }
-      } catch (err) {
-        console.error("Keyframe check failed", err);
-      }
 
-      retries++;
-      await new Promise((r) => setTimeout(r, 3000));
-    }
+        retries++;
+        await new Promise((r) => setTimeout(r, 3000));
+      }
+    };
+
+    checkKeyframeAvailability();
+  }, [keyframeUrl]);
+
+  const isOutOfRange = (value: number | undefined, min: number, max: number) => {
+    if (typeof value !== "number") return false;
+    return value < min || value > max;
   };
 
-  checkKeyframeAvailability();
-}, [keyframeUrl]);
-
+  const annotations = [
+    {
+      name: "Front Elbow Angle",
+      value: data.metrics.front_elbow_angle,
+      range: [150, 170],
+      position: { top: "20%", left: "30%" },
+    },
+    {
+      name: "Back Elbow Angle",
+      value: data.metrics.back_elbow_angle,
+      range: [70, 100],
+      position: { top: "25%", left: "70%" },
+    },
+    {
+      name: "Torso Lean",
+      value: data.metrics.torso_lean,
+      range: [10, 25],
+      position: { top: "50%", left: "40%" },
+    },
+    {
+      name: "Front Knee Angle",
+      value: data.metrics.front_knee_angle,
+      range: [80, 100],
+      position: { top: "70%", left: "30%" },
+    },
+    {
+      name: "Back Knee Angle",
+      value: data.metrics.back_knee_angle,
+      range: [120, 150],
+      position: { top: "75%", left: "70%" },
+    },
+    {
+      name: "Hip Rotation",
+      value: data.metrics.hip_rotation,
+      range: [30, 50],
+      position: { top: "60%", left: "50%" },
+    },
+    {
+      name: "Wrist Angle",
+      value: data.metrics.wrist_angle,
+      range: [150, 170],
+      position: { top: "15%", left: "50%" },
+    },
+  ];
 
   return (
     <div className="bg-white p-8 rounded-2xl shadow-lg">
@@ -145,7 +167,7 @@ export default function AnalysisResults({
       </div>
 
       {/* ------------------------------- */}
-      {/*  ✔ DOWNLOAD MP4 BUTTON ALWAYS   */}
+      {/*   DOWNLOAD MP4 BUTTON ALWAYS   */}
       {/* ------------------------------- */}
       <div className="text-center mb-8">
         <a
@@ -566,10 +588,30 @@ export default function AnalysisResults({
                   style={{ maxHeight: "600px" }}
                 />
 
-                <div className="absolute top-4 left-4 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg">
-                  <div className="text-sm font-semibold">Impact Frame</div>
-                  <div className="text-xs opacity-90">Pose Analysis</div>
-                </div>
+                {annotations.map((annotation, index) => {
+                  if (isOutOfRange(annotation.value, annotation.range[0], annotation.range[1])) {
+                    return (
+                      <div
+                        key={index}
+                        className="absolute text-center"
+                        style={{
+                          top: annotation.position.top,
+                          left: annotation.position.left,
+                          transform: "translate(-50%, -50%)",
+                        }}
+                      >
+                        <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                          {annotation.name}
+                        </div>
+                        <div
+                          className="w-0 h-0 border-l-4 border-r-4 border-b-8 border-l-transparent border-r-transparent border-b-red-500 mx-auto"
+                          style={{ marginTop: "-4px" }}
+                        />
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
               </div>
 
               <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
