@@ -159,6 +159,13 @@ export default function AnalysisResults({
     },
   ];
 
+  const mainJoints = [
+    { name: "Left Shoulder", position: { top: "30%", left: "25%" } },
+    { name: "Right Shoulder", position: { top: "30%", left: "75%" } },
+    { name: "Left Knee", position: { top: "70%", left: "35%" } },
+    { name: "Right Knee", position: { top: "70%", left: "65%" } },
+  ];
+
   return (
     <div className="bg-white p-8 rounded-2xl shadow-lg">
       <div className="text-center mb-8">
@@ -588,6 +595,20 @@ export default function AnalysisResults({
                   style={{ maxHeight: "600px" }}
                 />
 
+                {/* Render main joint green dots */}
+                {mainJoints.map((joint, index) => (
+                  <div
+                    key={index}
+                    className="absolute w-3 h-3 bg-green-500 rounded-full"
+                    style={{
+                      top: joint.position.top,
+                      left: joint.position.left,
+                      transform: "translate(-50%, -50%)",
+                    }}
+                  />
+                ))}
+
+                {/* Render out-of-range annotations */}
                 {annotations.map((annotation, index) => {
                   if (isOutOfRange(annotation.value, annotation.range[0], annotation.range[1])) {
                     return (
@@ -600,7 +621,7 @@ export default function AnalysisResults({
                           transform: "translate(-50%, -50%)",
                         }}
                       >
-                        <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                        <div className="bg-red-500 text-white text-sm font-bold px-3 py-2 rounded text-lg">
                           {annotation.name}
                         </div>
                         <div
