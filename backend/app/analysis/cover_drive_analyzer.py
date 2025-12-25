@@ -355,12 +355,15 @@ class CoverDriveAnalyzer:
                     else:
                         continue
                     
-                    # Draw an arrow pointing to the joint
+                    # Draw an arrow pointing farther from the joint
                     if joint in landmarks:
                         x, y = get_point(joint)
-                        cv2.arrowedLine(annotated_frame, (x, y - 50), (x, y), (0, 0, 255), 2)
+                        arrow_end = (x, y - 100)  # Move arrow farther
+                        cv2.arrowedLine(annotated_frame, arrow_end, (x, y), (0, 0, 255), 2)
                         cv2.putText(annotated_frame, f"{metric_name.replace('_', ' ')}: {value:.1f}°",
-                                    (x - 100, y - 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+                                    (arrow_end[0] - 150, arrow_end[1] - 20),  # Adjust label position
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1.0,  # Increase font size
+                                    (0, 0, 255), 2)  # Increase thickness
         
         # Save annotated frame
         cv2.imwrite(output_path, annotated_frame)
