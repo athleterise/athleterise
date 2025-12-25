@@ -1,4 +1,3 @@
-
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -308,7 +307,7 @@ class CoverDriveAnalyzer:
 
     def draw_annotated_keyframe(self, frame: np.ndarray, landmarks: Dict[str, Any], 
                               metrics: Dict[str, float], output_path: str) -> str:
-        """Draw annotated keyframe with landmarks and angles."""
+        """Draw annotated keyframe with landmarks, angles, and feedback for non-ideal metrics."""
         annotated_frame = frame.copy()
         height, width = frame.shape[:2]
         
@@ -316,28 +315,52 @@ class CoverDriveAnalyzer:
             lm = landmarks[landmark_name]
             return (int(lm['x'] * width), int(lm['y'] * height))
         
-        # Draw pose landmarks
-        for landmark_name, lm in landmarks.items():
-            x, y = int(lm['x'] * width), int(lm['y'] * height)
-            cv2.circle(annotated_frame, (x, y), 5, (0, 255, 0), -1)
-            cv2.putText(annotated_frame, landmark_name.split('_')[0], (x+5, y-5), 
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+        # Define main joints to display
+        main_joints = ['LEFT_SHOULDER', 'RIGHT_SHOULDER', 'LEFT_ELBOW', 'RIGHT_ELBOW',
+                       'LEFT_WRIST', 'RIGHT_WRIST', 'LEFT_HIP', 'RIGHT_HIP',
+                       'LEFT_KNEE', 'RIGHT_KNEE', 'LEFT_ANKLE', 'RIGHT_ANKLE', 'NOSE']
         
-        # Draw key angles
-        try:
-            # Front elbow angle
-            left_shoulder = get_point('LEFT_SHOULDER')
-            left_elbow = get_point('LEFT_ELBOW')
-            left_wrist = get_point('LEFT_WRIST')
-            
-            # Draw angle arc
-            cv2.ellipse(annotated_frame, left_elbow, (20, 20), 0, 0, 
-                       int(metrics['front_elbow_angle']), (255, 0, 0), 2)
-            cv2.putText(annotated_frame, f"Elbow: {metrics['front_elbow_angle']:.1f}°", 
-                       (left_elbow[0]+10, left_elbow[1]-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-            
-        except Exception as e:
-            print(f"Error drawing annotations: {e}")
+        # Draw main joints
+        for landmark_name in main_joints:
+            if landmark_name in landmarks:
+                x, y = get_point(landmark_name)
+                cv2.circle(annotated_frame, (x, y), 5, (0, 255, 0), -1)
+        
+        # Annotate angles that are not in the ideal range
+        for metric_name, value in metrics.items():
+            if metric_name in self.ideal_ranges:
+                ideal_min, ideal_max = self.ideal_ranges[metric_name]
+                if not (ideal_min <= value <= ideal_max):
+                    # Get the joint associated with the metric
+                    if metric_name == 'front_elbow_angle':
+                        joint = 'LEFT_ELBOW'
+                    elif metric_name == 'back_elbow_angle':
+                        joint = 'RIGHT_ELBOW'
+                    elif metric_name == 'front_knee_angle':
+                        joint = 'LEFT_KNEE'
+                    elif metric_name == 'back_knee_angle':
+                        joint = 'RIGHT_KNEE'
+                    elif metric_name == 'torso_lean':
+                        joint = 'LEFT_HIP'
+                    elif metric_name == 'shoulder_alignment':
+                        joint = 'LEFT_SHOULDER'
+                    elif metric_name == 'hip_rotation':
+                        joint = 'LEFT_HIP'
+                    elif metric_name == 'wrist_angle':
+                        joint = 'LEFT_WRIST'
+                    elif metric_name == 'head_position':
+                        joint = 'NOSE'
+                    elif metric_name == 'center_of_mass':
+                        joint = 'LEFT_HIP'
+                    else:
+                        continue
+                    
+                    # Draw an arrow pointing to the joint
+                    if joint in landmarks:
+                        x, y = get_point(joint)
+                        cv2.arrowedLine(annotated_frame, (x, y - 50), (x, y), (0, 0, 255), 2)
+                        cv2.putText(annotated_frame, f"{metric_name.replace('_', ' ')}: {value:.1f}°",
+                                    (x - 100, y - 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
         
         # Save annotated frame
         cv2.imwrite(output_path, annotated_frame)
