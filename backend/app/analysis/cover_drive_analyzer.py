@@ -327,6 +327,7 @@ class CoverDriveAnalyzer:
                 cv2.circle(annotated_frame, (x, y), 5, (0, 255, 0), -1)
         
         # Annotate angles that are not in the ideal range
+        used_positions = set()  # Track used label positions to avoid overlap
         for metric_name, value in metrics.items():
             if metric_name in self.ideal_ranges:
                 ideal_min, ideal_max = self.ideal_ranges[metric_name]
@@ -358,11 +359,18 @@ class CoverDriveAnalyzer:
                     # Draw an arrow pointing farther from the joint
                     if joint in landmarks:
                         x, y = get_point(joint)
-                        arrow_end = (x, y - 100)  # Move arrow farther
+                        arrow_end = (x, y - 150)  # Move arrow farther
+                        
+                        # Adjust label position to avoid overlap
+                        label_x, label_y = arrow_end[0] - 200, arrow_end[1] - 40
+                        while (label_x, label_y) in used_positions:
+                            label_y -= 30  # Shift label down if position is already used
+                        used_positions.add((label_x, label_y))
+                        
                         cv2.arrowedLine(annotated_frame, arrow_end, (x, y), (0, 0, 255), 2)
                         cv2.putText(annotated_frame, f"{metric_name.replace('_', ' ')}: {value:.1f}°",
-                                    (arrow_end[0] - 150, arrow_end[1] - 20),  # Adjust label position
-                                    cv2.FONT_HERSHEY_SIMPLEX, 1.0,  # Increase font size
+                                    (label_x, label_y),  # Dynamically adjusted label position
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1.0,  # Clear font size
                                     (0, 0, 255), 2)  # Increase thickness
         
         # Save annotated frame
