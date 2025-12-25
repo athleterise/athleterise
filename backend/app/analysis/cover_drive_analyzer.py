@@ -361,17 +361,21 @@ class CoverDriveAnalyzer:
                         x, y = get_point(joint)
                         arrow_end = (x, y - 150)  # Move arrow farther
                         
-                        # Adjust label position to avoid overlap
+                        # Dynamically adjust textbox position to avoid overlap
                         label_x, label_y = arrow_end[0] - 200, arrow_end[1] - 40
-                        while (label_x, label_y) in used_positions:
-                            label_y -= 30  # Shift label down if position is already used
+                        while any(abs(label_x - ux) < 150 and abs(label_y - uy) < 50 for ux, uy in used_positions):
+                            label_x += 30  # Shift label horizontally
+                            label_y -= 30  # Shift label vertically
                         used_positions.add((label_x, label_y))
                         
+                        # Draw arrow and textbox
                         cv2.arrowedLine(annotated_frame, arrow_end, (x, y), (0, 0, 255), 2)
+                        cv2.rectangle(annotated_frame, (label_x - 10, label_y - 20), 
+                                      (label_x + 200, label_y + 20), (255, 255, 255), -1)  # Textbox background
                         cv2.putText(annotated_frame, f"{metric_name.replace('_', ' ')}: {value:.1f}°",
                                     (label_x, label_y),  # Dynamically adjusted label position
-                                    cv2.FONT_HERSHEY_SIMPLEX, 1.0,  # Clear font size
-                                    (0, 0, 255), 2)  # Increase thickness
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.8,  # Clear font size
+                                    (0, 0, 255), 2)  # Text color
         
         # Save annotated frame
         cv2.imwrite(output_path, annotated_frame)
