@@ -328,6 +328,7 @@ class CoverDriveAnalyzer:
         
         # Annotate angles that are not in the ideal range
         used_positions = set()  # Track used label positions to avoid overlap
+        directions = ['top', 'left', 'right', 'bottom']  # Arrow directions
         for metric_name, value in metrics.items():
             if metric_name in self.ideal_ranges:
                 ideal_min, ideal_max = self.ideal_ranges[metric_name]
@@ -356,24 +357,39 @@ class CoverDriveAnalyzer:
                     else:
                         continue
                     
-                    # Draw an arrow pointing farther from the joint
+                    # Draw an arrow pointing in a specific direction
                     if joint in landmarks:
                         x, y = get_point(joint)
-                        arrow_end = (x, y - 150)  # Move arrow farther
+                        direction = directions[len(used_positions) % len(directions)]  # Cycle through directions
+                        if direction == 'top':
+                            arrow_end = (x, y - 150)
+                            label_x, label_y = arrow_end[0] - 100, arrow_end[1] - 20
+                        elif direction == 'left':
+                            arrow_end = (x - 150, y)
+                            label_x, label_y = arrow_end[0] - 200, arrow_end[1] + 10
+                        elif direction == 'right':
+                            arrow_end = (x + 150, y)
+                            label_x, label_y = arrow_end[0] + 10, arrow_end[1] + 10
+                        elif direction == 'bottom':
+                            arrow_end = (x, y + 150)
+                            label_x, label_y = arrow_end[0] - 100, arrow_end[1] + 40
                         
-                        # Dynamically adjust textbox position to avoid overlap
-                        label_x, label_y = arrow_end[0] - 200, arrow_end[1] - 40
-                        while any(abs(label_x - ux) < 150 and abs(label_y - uy) < 50 for ux, uy in used_positions):
+                        # Adjust textbox position to avoid overlap
+                        while any(abs(label_x - ux) < 200 and abs(label_y - uy) < 50 for ux, uy in used_positions):
                             label_x += 30  # Shift label horizontally
-                            label_y -= 30  # Shift label vertically
+                            label_y += 30  # Shift label vertically
                         used_positions.add((label_x, label_y))
                         
                         # Draw arrow and textbox
                         cv2.arrowedLine(annotated_frame, arrow_end, (x, y), (0, 0, 255), 2)
-                        cv2.rectangle(annotated_frame, (label_x - 10, label_y - 20), 
-                                      (label_x + 200, label_y + 20), (255, 255, 255), -1)  # Textbox background
-                        cv2.putText(annotated_frame, f"{metric_name.replace('_', ' ')}: {value:.1f}°",
-                                    (label_x, label_y),  # Dynamically adjusted label position
+                        text = f"{metric_name.replace('_', ' ')}: {value:.1f}°"
+                        text_size = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)[0]
+                        textbox_width = text_size[0] + 20
+                        textbox_height = text_size[1] + 20
+                        cv2.rectangle(annotated_frame, (label_x - 10, label_y - textbox_height), 
+                                      (label_x + textbox_width, label_y), (255, 255, 255), -1)  # Textbox background
+                        cv2.putText(annotated_frame, text,
+                                    (label_x, label_y - 10),  # Adjust text position inside textbox
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.8,  # Clear font size
                                     (0, 0, 255), 2)  # Text color
         
