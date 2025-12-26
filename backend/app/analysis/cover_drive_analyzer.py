@@ -362,22 +362,22 @@ class CoverDriveAnalyzer:
                         x, y = get_point(joint)
                         direction = directions[len(used_positions) % len(directions)]  # Cycle through directions
                         if direction == 'top':
-                            arrow_end = (x, y - 150)
-                            label_x, label_y = arrow_end[0] - 100, arrow_end[1] - 20
+                            arrow_end = (x, max(0, y - 150))  # Ensure arrow stays within image
+                            label_x, label_y = arrow_end[0] - 100, max(20, arrow_end[1] - 20)
                         elif direction == 'left':
-                            arrow_end = (x - 150, y)
-                            label_x, label_y = arrow_end[0] - 200, arrow_end[1] + 10
+                            arrow_end = (max(0, x - 150), y)
+                            label_x, label_y = max(20, arrow_end[0] - 200), arrow_end[1] + 10
                         elif direction == 'right':
-                            arrow_end = (x + 150, y)
-                            label_x, label_y = arrow_end[0] + 10, arrow_end[1] + 10
+                            arrow_end = (min(width - 1, x + 150), y)
+                            label_x, label_y = min(width - 220, arrow_end[0] + 10), arrow_end[1] + 10
                         elif direction == 'bottom':
-                            arrow_end = (x, y + 150)
-                            label_x, label_y = arrow_end[0] - 100, arrow_end[1] + 40
+                            arrow_end = (x, min(height - 1, y + 150))
+                            label_x, label_y = arrow_end[0] - 100, min(height - 20, arrow_end[1] + 40)
                         
                         # Adjust textbox position to avoid overlap
                         while any(abs(label_x - ux) < 200 and abs(label_y - uy) < 50 for ux, uy in used_positions):
-                            label_x += 30  # Shift label horizontally
-                            label_y += 30  # Shift label vertically
+                            label_x = min(max(20, label_x + 30), width - 220)  # Keep within horizontal bounds
+                            label_y = min(max(20, label_y + 30), height - 20)  # Keep within vertical bounds
                         used_positions.add((label_x, label_y))
                         
                         # Draw arrow and textbox
