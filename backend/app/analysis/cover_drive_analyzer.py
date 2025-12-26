@@ -249,7 +249,7 @@ class CoverDriveAnalyzer:
             
             # Head position relative to front knee
             nose = get_point('NOSE')
-            head_knee_offset = ((nose[0] - left_knee[0]) / width) * 100
+            head_knee_offset = abs(((nose[0] - left_knee[0]) / width) * 100)  # Ensure positive value
             metrics['head_position'] = head_knee_offset
             
             # Center of mass (approximation using hip position)
@@ -328,7 +328,7 @@ class CoverDriveAnalyzer:
         
         # Annotate angles that are not in the ideal range
         used_positions = set()  # Track used label positions to avoid overlap
-        directions = ['top', 'left', 'right', 'bottom']  # Arrow directions
+        directions = ['top', 'left', 'right', 'bottom', 'top-left', 'top-right', 'bottom-left', 'bottom-right']  # Arrow directions
         for metric_name, value in metrics.items():
             if metric_name in self.ideal_ranges:
                 ideal_min, ideal_max = self.ideal_ranges[metric_name]
@@ -362,7 +362,7 @@ class CoverDriveAnalyzer:
                         x, y = get_point(joint)
                         direction = directions[len(used_positions) % len(directions)]  # Cycle through directions
                         if direction == 'top':
-                            arrow_end = (x, max(0, y - 150))  # Ensure arrow stays within image
+                            arrow_end = (x, max(0, y - 150))
                             label_x, label_y = arrow_end[0] - 100, max(20, arrow_end[1] - 20)
                         elif direction == 'left':
                             arrow_end = (max(0, x - 150), y)
@@ -373,6 +373,18 @@ class CoverDriveAnalyzer:
                         elif direction == 'bottom':
                             arrow_end = (x, min(height - 1, y + 150))
                             label_x, label_y = arrow_end[0] - 100, min(height - 20, arrow_end[1] + 40)
+                        elif direction == 'top-left':
+                            arrow_end = (max(0, x - 100), max(0, y - 100))
+                            label_x, label_y = max(20, arrow_end[0] - 150), max(20, arrow_end[1] - 20)
+                        elif direction == 'top-right':
+                            arrow_end = (min(width - 1, x + 100), max(0, y - 100))
+                            label_x, label_y = min(width - 220, arrow_end[0] + 10), max(20, arrow_end[1] - 20)
+                        elif direction == 'bottom-left':
+                            arrow_end = (max(0, x - 100), min(height - 1, y + 100))
+                            label_x, label_y = max(20, arrow_end[0] - 150), min(height - 20, arrow_end[1] + 40)
+                        elif direction == 'bottom-right':
+                            arrow_end = (min(width - 1, x + 100), min(height - 1, y + 100))
+                            label_x, label_y = min(width - 220, arrow_end[0] + 10), min(height - 20, arrow_end[1] + 40)
                         
                         # Adjust textbox position to avoid overlap
                         while any(abs(label_x - ux) < 200 and abs(label_y - uy) < 50 for ux, uy in used_positions):
