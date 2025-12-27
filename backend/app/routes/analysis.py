@@ -1,18 +1,20 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import json
 from pathlib import Path
+import json
 import sys
 import os
 
 # Allow import of analysis modules
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-# Shot-specific analyzers
+# -------------------------------
+# Import shot-specific analyzers
+# -------------------------------
 from app.analysis.cover_drive_analyzer import analyze_cover_drive_video
+from app.analysis.straight_drive_analyzer import analyze_straight_drive_video
 from app.analysis.pull_shot_analyzer import analyze_pull_shot_video
 from app.analysis.cut_shot_analyzer import analyze_cut_shot_video
-from app.analysis.straight_drive_analyzer import analyze_straight_drive_video
 
 # ============================================
 # Render storage directories
@@ -28,16 +30,24 @@ class AnalysisRequest(BaseModel):
     shot: str
 
 
-SHOT_ANALYZERS = {
+# -------------------------------
+# Shot → Analyzer routing table
+# -------------------------------
+ANALYZER_MAP = {
     "cover_drive": analyze_cover_drive_video,
+    "straight_drive": analyze_straight_drive_video,
     "pull_shot": analyze_pull_shot_video,
     "cut_shot": analyze_cut_shot_video,
-    "straight_drive": analyze_straight_drive_video,
 }
 
 
 @router.post("/")
 async def analyze_video(request: AnalysisRequest):
+    """
+    Main analysis handler.
+    Selects shot-specific analyzer, generates metrics,
+    feedback, keyframe, and returns overlay video URL.
+    """
     try:
         # -------------------------------
         # 1. Locate uploaded video
@@ -47,37 +57,58 @@ async def analyze_video(request: AnalysisRequest):
             raise HTTPException(status_code=404, detail="Video file not found")
 
         video_path = video_candidates[0]
+
+        # Ensure results folder exists
         RESULT_DIR.mkdir(parents=True, exist_ok=True)
 
         # -------------------------------
         # 2. Select correct analyzer
         # -------------------------------
-        analyzer = SHOT_ANALYZERS.get(request.shot)
-        if not analyzer:
+        analyzer = ANALYZER_MAP.get(request.shot)
+        if analyzer is None:
             raise HTTPException(
                 status_code=400,
                 detail=f"Unsupported shot type: {request.shot}",
             )
 
+        # -------------------------------
+        # 3. Run shot-specific analysis
+        # -------------------------------
         result = analyzer(str(video_path), str(RESULT_DIR))
         result["shot_type"] = request.shot
 
         # -------------------------------
-        # 3. Detect overlay video
+        # 4. Detect overlay files
         # -------------------------------
         overlay_mp4 = RESULT_DIR / f"{request.job_id}_overlay.mp4"
         overlay_avi = RESULT_DIR / f"{request.job_id}_overlay.avi"
 
-        overlay_file = overlay_mp4 if overlay_mp4.exists() else (
-            overlay_avi if overlay_avi.exists() else None
-        )
-
-        result["overlay_video_url"] = (
-            f"/static/{overlay_file.name}" if overlay_file else None
-        )
+        overlay_file = None
+        if overlay_mp4.exists():
+            overlay_file = overlay_mp4
+        elif overlay_avi.exists():
+            overlay_file = overlay_avi
 
         # -------------------------------
-        # 4. Save analysis JSON
+        # 5. Insert overlay URL
+        # -------------------------------
+        if overlay_file:
+            result["overlay_video_url"] = f"/static/{overlay_file.name}"
+        else:
+            result["overlay_video_url"] = None
+
+        # -------------------------------
+        # 6. Clean legacy fields (safe)
+        # -------------------------------
+        for unwanted in [
+            "keyframe_url",
+            "video_path",
+            "overlay_video_url_old",
+        ]:
+            result.pop(unwanted, None)
+
+        # -------------------------------
+        # 7. Save analysis JSON
         # -------------------------------
         result_json_path = RESULT_DIR / f"{request.job_id}_analysis.json"
         with open(result_json_path, "w") as f:
@@ -85,5 +116,7 @@ async def analyze_video(request: AnalysisRequest):
 
         return result
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
