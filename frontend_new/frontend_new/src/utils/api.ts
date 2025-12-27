@@ -12,9 +12,13 @@ export const testConnection = async () => {
   }
 };
 
-export const uploadVideo = async (file: File) => {
+// =====================================================
+// UPDATED: uploadVideo now sends shot_type as well
+// =====================================================
+export const uploadVideo = async (file: File, shotType: string) => {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("shot_type", shotType); // 🔹 NEW
 
   const res = await fetch(`${BACKEND_URL}/upload`, {
     method: "POST",
@@ -44,7 +48,7 @@ export const getResult = async (jobId: string) => {
 };
 
 export const analyzeVideo = async (jobId: string, shotType: string) => {
-  const base = BACKEND_URL.replace(/\/+$/, ""); // remove trailing slashes
+  const base = BACKEND_URL.replace(/\/+$/, "");
   const url = `${base}/analyze/`;
 
   const res = await fetch(url, {
@@ -54,12 +58,11 @@ export const analyzeVideo = async (jobId: string, shotType: string) => {
   });
 
   if (!res.ok) {
-    console.error("Analyze video error:", await res.text()); // Debugging log
+    console.error("Analyze video error:", await res.text());
     throw new Error(`Backend error: ${res.status}`);
   }
 
   const result = await res.json();
-  console.log("Analysis result:", result); // Debugging log
+  console.log("Analysis result:", result);
   return result;
 };
-
