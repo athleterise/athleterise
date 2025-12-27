@@ -1,15 +1,18 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Dict, Any
 import json
 from pathlib import Path
 import sys
 import os
 
 # Allow import of analysis modules
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
+# Shot-specific analyzers
 from app.analysis.cover_drive_analyzer import analyze_cover_drive_video
+from app.analysis.pull_shot_analyzer import analyze_pull_shot_video
+from app.analysis.cut_shot_analyzer import analyze_cut_shot_video
+from app.analysis.straight_drive_analyzer import analyze_straight_drive_video
 
 # ============================================
 # Render storage directories
@@ -25,60 +28,56 @@ class AnalysisRequest(BaseModel):
     shot: str
 
 
+SHOT_ANALYZERS = {
+    "cover_drive": analyze_cover_drive_video,
+    "pull_shot": analyze_pull_shot_video,
+    "cut_shot": analyze_cut_shot_video,
+    "straight_drive": analyze_straight_drive_video,
+}
+
+
 @router.post("/")
 async def analyze_video(request: AnalysisRequest):
-    """
-    Main analysis handler.
-    It loads the uploaded video, runs shot analysis,
-    and returns JSON including the overlay video URL.
-    """
     try:
         # -------------------------------
-        # 1. Locate uploaded video file
+        # 1. Locate uploaded video
         # -------------------------------
         video_candidates = list(UPLOAD_DIR.glob(f"{request.job_id}_*"))
-
         if not video_candidates:
             raise HTTPException(status_code=404, detail="Video file not found")
 
         video_path = video_candidates[0]
-
-        # Ensure results folder exists
         RESULT_DIR.mkdir(parents=True, exist_ok=True)
 
         # -------------------------------
-        # 2. Run shot-specific analysis
+        # 2. Select correct analyzer
         # -------------------------------
-        result = analyze_cover_drive_video(str(video_path), str(RESULT_DIR))
+        analyzer = SHOT_ANALYZERS.get(request.shot)
+        if not analyzer:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported shot type: {request.shot}",
+            )
+
+        result = analyzer(str(video_path), str(RESULT_DIR))
         result["shot_type"] = request.shot
 
         # -------------------------------
-        # 3. Detect overlay files
+        # 3. Detect overlay video
         # -------------------------------
         overlay_mp4 = RESULT_DIR / f"{request.job_id}_overlay.mp4"
         overlay_avi = RESULT_DIR / f"{request.job_id}_overlay.avi"
 
-        overlay_file = None
-        if overlay_mp4.exists():
-            overlay_file = overlay_mp4   # Preferred — our new pipeline
-        elif overlay_avi.exists():
-            overlay_file = overlay_avi   # Fallback if needed
+        overlay_file = overlay_mp4 if overlay_mp4.exists() else (
+            overlay_avi if overlay_avi.exists() else None
+        )
+
+        result["overlay_video_url"] = (
+            f"/static/{overlay_file.name}" if overlay_file else None
+        )
 
         # -------------------------------
-        # 4. Insert video URL for frontend
-        # -------------------------------
-        if overlay_file:
-            # Served by main.py → app.mount("/static", results_dir)
-            result["overlay_video_url"] = f"/static/{overlay_file.name}"
-        else:
-            result["overlay_video_url"] = None
-
-        # Remove old / unused fields
-        for unwanted in ["keyframe_path", "keyframe_url", "video_path", "overlay_video_url_old"]:
-            result.pop(unwanted, None)
-
-        # -------------------------------
-        # 5. Save analysis JSON
+        # 4. Save analysis JSON
         # -------------------------------
         result_json_path = RESULT_DIR / f"{request.job_id}_analysis.json"
         with open(result_json_path, "w") as f:
