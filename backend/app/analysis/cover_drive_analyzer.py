@@ -386,9 +386,9 @@ class CoverDriveAnalyzer:
                             arrow_end = (x + 150, y + 150)
                             label_x, label_y = arrow_end[0] + 20, arrow_end[1] + 60
                         
-                        # Allow textboxes to go outside the image but ensure visibility
-                        label_x = max(label_x, 20)
-                        label_y = max(label_y, 20)
+                        # Ensure textboxes stay within the image boundaries
+                        label_x = max(10, min(label_x, width - 220))  # Keep within horizontal bounds
+                        label_y = max(30, min(label_y, height - 10))  # Keep within vertical bounds
                         
                         # Adjust textbox position to avoid overlap
                         while any(abs(label_x - ux) < 200 and abs(label_y - uy) < 50 for ux, uy in used_positions):
