@@ -4,6 +4,7 @@ from pathlib import Path
 import json
 import sys
 import os
+import shutil  # ← ADDED
 
 # Allow import of analysis modules
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -98,17 +99,28 @@ async def analyze_video(request: AnalysisRequest):
             result["overlay_video_url"] = None
 
         # -------------------------------
-        # 6. Clean legacy fields (safe)
+        # 6. 🔥 KEYFRAME FIX (ADDED)
+        # -------------------------------
+        # Analyzer returns something like ".../<video_stem>_keyframe.jpg"
+        src_keyframe = result.get("keyframe_path")
+        if src_keyframe and Path(src_keyframe).exists():
+            stable_keyframe = RESULT_DIR / f"{request.job_id}_keyframe.jpg"
+            shutil.copyfile(src_keyframe, stable_keyframe)
+            result["keyframe_url"] = f"/static/{stable_keyframe.name}"
+        else:
+            result["keyframe_url"] = None
+
+        # -------------------------------
+        # 7. Clean legacy fields (UNCHANGED)
         # -------------------------------
         for unwanted in [
-            "keyframe_url",
             "video_path",
             "overlay_video_url_old",
         ]:
             result.pop(unwanted, None)
 
         # -------------------------------
-        # 7. Save analysis JSON
+        # 8. Save analysis JSON
         # -------------------------------
         result_json_path = RESULT_DIR / f"{request.job_id}_analysis.json"
         with open(result_json_path, "w") as f:
