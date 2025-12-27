@@ -50,7 +50,8 @@ export default function VideoUploader({
 
     setStatus("Uploading...");
     try {
-      const data = await uploadVideo(file);
+      // 🔹 CHANGED: pass shotType to uploadVideo
+      const data = await uploadVideo(file, shotType);
       setJobId(data.job_id);
       onJobIdChange(data.job_id);
       setStatus(data.status);
@@ -69,7 +70,7 @@ export default function VideoUploader({
     try {
       const analysisResult = await analyzeVideo(jobId, shotType);
       if (!analysisResult || !analysisResult.metrics) {
-        console.error("Invalid analysis result:", analysisResult); // Debugging log
+        console.error("Invalid analysis result:", analysisResult);
         throw new Error("Analysis result is incomplete or invalid");
       }
       setStatus("Analysis complete");
