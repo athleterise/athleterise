@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException
+from fastapi import FastAPI, UploadFile, File, BackgroundTasks, HTTPException, Form
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -33,7 +33,6 @@ app.include_router(analysis_router)
 # ---------------------------
 # STATIC FILE MOUNTING FIX
 # ---------------------------
-# Render persistent disk
 storage_dir = Path("/storage")
 results_dir = storage_dir / "results"
 uploads_dir = storage_dir / "uploads"
@@ -41,9 +40,6 @@ uploads_dir = storage_dir / "uploads"
 results_dir.mkdir(parents=True, exist_ok=True)
 uploads_dir.mkdir(parents=True, exist_ok=True)
 
-# 🚨 FIX: serve *ONE* consistent static folder at "/static"
-# Everything inside /storage/results becomes available as:
-#   https://backend.com/static/<filename>
 app.mount("/static", StaticFiles(directory=str(results_dir)), name="static_results")
 
 # ---------------------------
@@ -57,8 +53,13 @@ async def health_check():
 # UPLOAD
 # ---------------------------
 @app.post("/upload")
-async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+async def upload_video(
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    shot_type: str = Form("cover_drive"),  # 🔹 NEW: receive shot_type safely
+):
     print(f"[Upload] Received file: {file.filename}")
+    print(f"[Upload] Shot type: {shot_type}")
 
     if not file.filename.lower().endswith((".mp4", ".mov", ".mkv", ".avi", ".webm")):
         raise HTTPException(status_code=400, detail="Unsupported file type")
@@ -74,7 +75,11 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
     # -----------------------
     # BACKGROUND PIPELINE
     # -----------------------
-    def process_and_save(job_id_local=job_id, path_local=saved_path):
+    def process_and_save(
+        job_id_local=job_id,
+        path_local=saved_path,
+        shot_type_local=shot_type,  # 🔹 capture shot_type
+    ):
         try:
             # Step 1 — Landmark extraction
             result = analyze_shot(path_local, job_id_local)
@@ -89,14 +94,21 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
                 generate_evaluation_json,
             )
 
-            overlay_output = str(Path(out_path).with_name(f"{job_id_local}_overlay.mp4"))
+            overlay_output = str(
+                Path(out_path).with_name(f"{job_id_local}_overlay.mp4")
+            )
+
+            # 🔹 PASS shot_type into overlay generator
             issues_path = generate_overlay_video(
                 video_path=path_local,
                 landmarks_json_path=out_path,
                 output_path=overlay_output,
+                shot_type=shot_type_local,
             )
 
-            evaluation_path = str(Path(out_path).with_name(f"{job_id_local}_evaluation.json"))
+            evaluation_path = str(
+                Path(out_path).with_name(f"{job_id_local}_evaluation.json")
+            )
             generate_evaluation_json(issues_path, evaluation_path)
 
         except Exception as e:
@@ -107,7 +119,10 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
 
     background_tasks.add_task(process_and_save)
 
-    return JSONResponse(status_code=202, content={"job_id": job_id, "status": "queued"})
+    return JSONResponse(
+        status_code=202,
+        content={"job_id": job_id, "status": "queued"},
+    )
 
 # ---------------------------
 # RESULT FETCH
@@ -119,10 +134,8 @@ async def get_result(job_id: str):
     if not analysis_path.exists():
         return JSONResponse(status_code=404, content={"error": "result not ready"})
 
-    # Read the JSON result
     data = json.loads(analysis_path.read_text())
 
-    # Check if overlay video exists
     overlay_mp4 = results_dir / f"{job_id}_overlay.mp4"
     if overlay_mp4.exists():
         data["overlay_video_url"] = f"/static/{job_id}_overlay.mp4"
@@ -130,4 +143,3 @@ async def get_result(job_id: str):
         data["overlay_video_url"] = None
 
     return JSONResponse(status_code=200, content=data)
-
