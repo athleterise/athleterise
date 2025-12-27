@@ -257,7 +257,7 @@ class CoverDriveAnalyzer:
             left_ankle_x = left_ankle[0]
             right_ankle_x = right_ankle[0]
             foot_center_x = (left_ankle_x + right_ankle_x) / 2
-            com_offset = ((hip_center_x - foot_center_x) / width) * 100
+            com_offset = abs(((hip_center_x - foot_center_x) / width) * 100)  # Ensure positive value
             metrics['center_of_mass'] = com_offset
             
         except Exception as e:
@@ -362,34 +362,38 @@ class CoverDriveAnalyzer:
                         x, y = get_point(joint)
                         direction = directions[len(used_positions) % len(directions)]  # Cycle through directions
                         if direction == 'top':
-                            arrow_end = (x, max(0, y - 150))
-                            label_x, label_y = arrow_end[0] - 100, max(20, arrow_end[1] - 20)
+                            arrow_end = (x, max(0, y - 200))  # Farther arrow
+                            label_x, label_y = arrow_end[0] - 100, arrow_end[1] - 40
                         elif direction == 'left':
-                            arrow_end = (max(0, x - 150), y)
-                            label_x, label_y = max(20, arrow_end[0] - 200), arrow_end[1] + 10
+                            arrow_end = (x - 200, y)
+                            label_x, label_y = arrow_end[0] - 220, arrow_end[1] + 10
                         elif direction == 'right':
-                            arrow_end = (min(width - 1, x + 150), y)
-                            label_x, label_y = min(width - 220, arrow_end[0] + 10), arrow_end[1] + 10
+                            arrow_end = (x + 200, y)
+                            label_x, label_y = arrow_end[0] + 20, arrow_end[1] + 10
                         elif direction == 'bottom':
-                            arrow_end = (x, min(height - 1, y + 150))
-                            label_x, label_y = arrow_end[0] - 100, min(height - 20, arrow_end[1] + 40)
+                            arrow_end = (x, y + 200)
+                            label_x, label_y = arrow_end[0] - 100, arrow_end[1] + 60
                         elif direction == 'top-left':
-                            arrow_end = (max(0, x - 100), max(0, y - 100))
-                            label_x, label_y = max(20, arrow_end[0] - 150), max(20, arrow_end[1] - 20)
+                            arrow_end = (x - 150, y - 150)
+                            label_x, label_y = arrow_end[0] - 200, arrow_end[1] - 40
                         elif direction == 'top-right':
-                            arrow_end = (min(width - 1, x + 100), max(0, y - 100))
-                            label_x, label_y = min(width - 220, arrow_end[0] + 10), max(20, arrow_end[1] - 20)
+                            arrow_end = (x + 150, y - 150)
+                            label_x, label_y = arrow_end[0] + 20, arrow_end[1] - 40
                         elif direction == 'bottom-left':
-                            arrow_end = (max(0, x - 100), min(height - 1, y + 100))
-                            label_x, label_y = max(20, arrow_end[0] - 150), min(height - 20, arrow_end[1] + 40)
+                            arrow_end = (x - 150, y + 150)
+                            label_x, label_y = arrow_end[0] - 200, arrow_end[1] + 60
                         elif direction == 'bottom-right':
-                            arrow_end = (min(width - 1, x + 100), min(height - 1, y + 100))
-                            label_x, label_y = min(width - 220, arrow_end[0] + 10), min(height - 20, arrow_end[1] + 40)
+                            arrow_end = (x + 150, y + 150)
+                            label_x, label_y = arrow_end[0] + 20, arrow_end[1] + 60
+                        
+                        # Allow textboxes to go outside the image but ensure visibility
+                        label_x = max(label_x, 20)
+                        label_y = max(label_y, 20)
                         
                         # Adjust textbox position to avoid overlap
                         while any(abs(label_x - ux) < 200 and abs(label_y - uy) < 50 for ux, uy in used_positions):
-                            label_x = min(max(20, label_x + 30), width - 220)  # Keep within horizontal bounds
-                            label_y = min(max(20, label_y + 30), height - 20)  # Keep within vertical bounds
+                            label_x += 30
+                            label_y += 30
                         used_positions.add((label_x, label_y))
                         
                         # Draw arrow and textbox
